@@ -2,7 +2,9 @@ package utility
 
 import exceptions.UserWantsToQuitProgramException
 import user.UserInteraction.Answer
+import utility.ConsolePrinter.Companion.printGreen
 import utility.ConsolePrinter.Companion.printRed
+import utility.ConsolePrinter.Companion.printYellow
 import java.io.File
 
 class FileHelper {
@@ -25,7 +27,7 @@ class FileHelper {
                         }
                     }
 
-                    else -> println("❌ Path does not exist. Please try again.")
+                    else -> printRed("❌ Path does not exist. Please try again.")
                 }
             }
         }
@@ -40,6 +42,7 @@ class FileHelper {
         }
 
         private fun getAnswer(): Answer {
+            print("\t")
             val typedIn = readlnOrNull()
             if (typedIn != null) {
                 when (typedIn.lowercase()) {
@@ -55,7 +58,7 @@ class FileHelper {
 
         private fun askToUseParentDirectory(file: File): Boolean {
             val parent = file.parent ?: return false
-            println("⚠️ That path is a file.")
+            printYellow("⚠️ That path is a file.")
             val message = "Do you want to use the containing directory ($parent) instead? [y/N]: "
             val answer = promptUser(message)
             return answer.equals("y", ignoreCase = true)
@@ -73,7 +76,7 @@ class FileHelper {
         }
 
         private fun promptUser(message: String): String {
-            print("$message ")
+            printGreen("$message ")
             return readlnOrNull()?.trim().orEmpty()
         }
 
@@ -84,23 +87,23 @@ class FileHelper {
 
                 when {
                     !dir.exists() -> {
-                        print("Directory does not exist. Create it? [Y/y or N/n]: ")
+                        printGreen("Directory does not exist. Create it? [Y/y or N/n]: ")
                         if (readlnOrNull()?.trim().equals("y", ignoreCase = true)) {
                             if (dir.mkdirs()) {
                                 println("Directory created.")
                                 return dir
                             } else {
-                                println("Failed to create directory. Try again.")
+                                printRed("Failed to create directory. Try again.")
                             }
                         }
                     }
 
                     !dir.isDirectory -> {
-                        println("The path is not a directory. Try again.")
+                        printRed("The path is not a directory. Try again.")
                     }
 
                     dir.listFiles()?.isNotEmpty() == true -> {
-                        print("Directory is not empty. Use it anyway? [Y/y or N/n]: ")
+                        printYellow("Directory is not empty. Use it anyway? [Y/y or N/n]: ")
                         if (readlnOrNull()?.trim().equals("y", ignoreCase = true)) {
                             return dir
                         }
@@ -114,7 +117,7 @@ class FileHelper {
         }
 
         fun printAllTypesOfUniqueFiles(uniqueFilesList: Map<String, List<File>>) {
-            println("File types and their counts:")
+            println("\tFile types and their counts:")
 
             // Split the map into: regular entries and the special "(no extension)"
             val (regularEntries, noExtEntry) = uniqueFilesList.entries.partition { it.key != NO_EXTENSION_KEY }
@@ -140,7 +143,7 @@ class FileHelper {
             // Print each line with aligned colon and updated suffix
             for ((fileType, files) in finalEntries) {
                 val paddedKey = fileType.padEnd(maxKeyLength)
-                println("\t$paddedKey: ${files.size} file/s")
+                println("\t\t$paddedKey: ${files.size} file/s")
             }
         }
 
