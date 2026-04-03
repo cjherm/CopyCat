@@ -2,6 +2,7 @@ package app
 
 import exceptions.UserWantsToQuitProgramException
 import user.UserInteraction.Answer
+import utility.ConsolePrinter.Companion.printRed
 import utility.ConsolePrinter.Companion.printYellow
 import utility.ConsolePrinter.Companion.printWhite
 import utility.FileHelper
@@ -13,12 +14,19 @@ class CopyCatApplication {
     fun getSrcAndTargetDirectoriesFromUser(config: CopyCatConfiguration) {
         var srcDir = File("")
         var compareDir = File("")
+        var promptForCompareDir = true
         var userAnswer = Answer.NO
         while (userAnswer == Answer.NO) {
             srcDir = FileHelper.promptForValidDirectory("Enter the path to the source directory:")
-            compareDir =
-                FileHelper.promptForValidDirectory("Enter the path to the directory in which to search for duplicates:")
-
+            while (promptForCompareDir) {
+                compareDir =
+                    FileHelper.promptForValidDirectory("Enter the path to the directory in which to search for duplicates:")
+                promptForCompareDir = false
+                if (compareDir == srcDir) {
+                    printRed("\tYou cannot use the source directory here!")
+                    promptForCompareDir = true
+                }
+            }
             println("\t    Source directory:\n\t\t${srcDir.absolutePath}")
             println("\tComparison directory:\n\t\t${compareDir.absolutePath}")
 
