@@ -59,14 +59,18 @@ class CopyCatApplication {
         var userAnswer = Answer.UNDEFINED
         var selectedFileTypes = listOf<String>()
         while (userAnswer != Answer.YES) {
-            println("Please select what file types should be copied like this: jpg png or [Q/q] to quit")
+            println("Please select what file types should be copied like this: jpg png or [$] for all or [Q/q] to quit")
             val enteredLine = readlnOrNull()
             if (enteredLine != null) {
                 val trimmedLine = enteredLine.trim()
                 if (trimmedLine.lowercase() == "q") {
                     throw UserWantsToQuitProgramException()
                 }
-                selectedFileTypes = extractAndFilterStrings(trimmedLine, config.uniqueFiles.keys)
+                selectedFileTypes = if (trimmedLine == "$") {
+                    config.uniqueFiles.keys.toList()
+                } else {
+                    extractAndFilterStrings(trimmedLine, config.uniqueFiles.keys)
+                }
                 println("Your selection is: $selectedFileTypes")
                 userAnswer = FileHelper.askQuestionAndRequestAnswer("Is this selection correct?")
             }
