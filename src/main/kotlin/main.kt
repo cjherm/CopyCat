@@ -50,10 +50,14 @@ private fun startShell() {
 }
 
 private fun startGui() {
+    println("startGui() WORK IN PROGRESS")
     // TODO
 }
 
 private fun startImmediateExecution(config: CopyCatConfiguration) {
-    val ccApp = CopyCatApplication()
-    ccApp.launch(config)
+    println("startImmediateExecution() WORK IN PROGRESS")
+    println(config)
+    // TODO
+    //val ccApp = CopyCatApplication()
+    //ccApp.launch(config)
 }

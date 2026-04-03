@@ -14,10 +14,7 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
     private val argsList: List<Argument> = parseArgs()
 
     fun requestsGui(): Boolean {
-        val result = argsList.contains(NoValueArgument(ArgumentKey.GUI.key))
-        println("requestsGui = $result")
-        println(argsList)
-        return result
+        return argsList.contains(NoValueArgument(ArgumentKey.GUI.key))
     }
 
     fun getConfig(): CopyCatConfiguration? {
