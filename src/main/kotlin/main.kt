@@ -16,9 +16,10 @@ fun main(args: Array<String>) {
         return
     }
 
-    if (argCatcher.hasSufficientArgs()) {
+    val config = argCatcher.getConfig()
+    if (config != null) {
         // When all arguments are provided and no GUI requests, we will launch CopyCat directly without a Shell nor GUI
-        startImmediateExecution(argCatcher.getConfig())
+        startImmediateExecution(config)
         return
     }
 
