@@ -17,18 +17,10 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
         return result
     }
 
-    fun hasSufficientArgs(): Boolean {
-        val result = false
-        println("hasSufficientArgs = $result")
-        println(argsList)
-        return result
+    fun getConfig(): CopyCatConfiguration? {
+        // TODO
+        return null
     }
-
-    fun getConfig(): CopyCatConfiguration = CopyCatConfiguration(
-        sourceDir = java.io.File(""),
-        copyDestDir = java.io.File(""),
-        filesSelectedToBeCopied = emptyList()
-    )
 
     private fun parseArgs(): List<Argument> {
         val queue = ArrayDeque(args.toList())
