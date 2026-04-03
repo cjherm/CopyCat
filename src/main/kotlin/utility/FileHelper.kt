@@ -1,5 +1,6 @@
 package utility
 
+import exceptions.UserWantsToQuitProgramException
 import user.UserInteraction.Answer
 import utility.ConsolePrinter.Companion.printRed
 import java.io.File
@@ -128,7 +129,7 @@ class FileHelper {
                 sortedEntries
             }
 
-            if(finalEntries.isEmpty()){
+            if (finalEntries.isEmpty()) {
                 printRed("No unique files found!")
                 return
             }
@@ -160,6 +161,28 @@ class FileHelper {
 
             return missingFiles.groupBy { file ->
                 file.extension.lowercase().ifBlank { NO_EXTENSION_KEY }
+            }
+        }
+
+        fun promptForBoolean(prompt: String): Boolean {
+            val answer = askQuestionAndRequestAnswer(prompt)
+            while (true) {
+                return when (answer) {
+
+                    Answer.YES -> {
+                        true
+                    }
+
+                    Answer.NO -> {
+                        false
+                    }
+
+                    Answer.QUIT -> {
+                        throw UserWantsToQuitProgramException()
+                    }
+
+                    else -> promptForBoolean(prompt)
+                }
             }
         }
     }

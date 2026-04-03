@@ -9,4 +9,5 @@ class CopyCatConfiguration {
     var compareDir = File("")
     var copyDestDir = File("")
     var filesSelectedToBeCopied = listOf<File>()
+    var useSeparateDestDir = true
 }

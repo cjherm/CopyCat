@@ -154,8 +154,14 @@ class CopyCatApplication {
     }
 
     fun letUserSelectTempDirectory(config: CopyCatConfiguration) {
-        config.copyDestDir =
-            FileHelper.promptForDirectory("Enter the path to the separate directory:")
+        config.useSeparateDestDir =
+            FileHelper.promptForBoolean("Do you want to use a separate destination directory? If not, then CopyCat will use this one?: ${config.compareDir.absolutePath}")
+        if (config.useSeparateDestDir) {
+            config.copyDestDir =
+                FileHelper.promptForDirectory("Enter the path to the separate directory:")
+        } else {
+            config.copyDestDir = config.compareDir
+        }
     }
 
     fun showWelcome() {
