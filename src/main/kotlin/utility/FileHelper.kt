@@ -1,6 +1,7 @@
 package utility
 
 import user.UserInteraction.Answer
+import utility.ConsolePrinter.Companion.printRed
 import java.io.File
 
 class FileHelper {
@@ -125,6 +126,11 @@ class FileHelper {
                 sortedEntries + noExtEntry
             } else {
                 sortedEntries
+            }
+
+            if(finalEntries.isEmpty()){
+                printRed("No unique files found!")
+                return
             }
 
             // Calculate padding
