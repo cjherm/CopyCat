@@ -6,7 +6,7 @@ It was built with situations like offloading a camera SD card or an external dri
 
 ## Requirements
 
-Java 17 or higher must be installed on your machine. You can download it from [adoptium.net](https://adoptium.net) if you do not have it already.
+Java 17 or higher must be installed on your machine.
 
 ## Running CopyCat
 
