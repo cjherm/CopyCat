@@ -42,3 +42,10 @@ build_and_run.bat
 ```
 
 The script builds the project, copies the JAR to the project root, and runs it straight away.
+
+## TODO's left
+* Rewrite this readme intro
+* launching via cmd args does not work yet
+** The shell procedure must be adapted to also make cmd args possible
+* Create GUI
+* Add more tests and adapt existing ones
