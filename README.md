@@ -1,6 +1,6 @@
 # CopyCat
 
-CopyCat is a command-line tool that copies files from one directory to another while skipping duplicates. It compares a source directory against a reference directory, identifies files that are missing from the reference, and copies only those. You can filter by file type so only the formats you care about are transferred.
+STILL WORK IN PROGRESS! CopyCat is a command-line tool that copies files from one directory to another while skipping duplicates. It compares a source directory against a reference directory, identifies files that are missing from the reference, and copies only those. You can filter by file type so only the formats you care about are transferred.
 
 It was built with situations like offloading a camera SD card or an external drive in mind, where you want to pull in new files without duplicating what you already have.
 
