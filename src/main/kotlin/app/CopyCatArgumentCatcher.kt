@@ -32,8 +32,12 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
             return null
         }
         if (!destDir.isValidDirectory()) {
-            printRed("Destination directory is invalid or does not exist: ${destDir.absolutePath}")
-            return null
+            destDir.mkdirs()
+            if (!destDir.isValidDirectory()) {
+                printRed("Destination directory could not be created: ${destDir.absolutePath}")
+                return null
+            }
+            println("Destination directory created: ${destDir.absolutePath}")
         }
         if (srcDir == compDir) {
             printRed("Source and comparison directory must not be the same.")
