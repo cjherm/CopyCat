@@ -39,7 +39,7 @@ class FileHelper {
         }
 
         private fun getAnswer(): Answer {
-            val typedIn = readLine()
+            val typedIn = readlnOrNull()
             if (typedIn != null) {
                 when (typedIn.lowercase()) {
                     "y" -> return Answer.YES
@@ -73,7 +73,7 @@ class FileHelper {
 
         private fun promptUser(message: String): String {
             print("$message ")
-            return readLine()?.trim().orEmpty()
+            return readlnOrNull()?.trim().orEmpty()
         }
 
         fun promptForDirectory(prompt: String): File {
@@ -84,7 +84,7 @@ class FileHelper {
                 when {
                     !dir.exists() -> {
                         print("Directory does not exist. Create it? [Y/y or N/n]: ")
-                        if (readLine()?.trim().equals("y", ignoreCase = true)) {
+                        if (readlnOrNull()?.trim().equals("y", ignoreCase = true)) {
                             if (dir.mkdirs()) {
                                 println("Directory created.")
                                 return dir
@@ -100,7 +100,7 @@ class FileHelper {
 
                     dir.listFiles()?.isNotEmpty() == true -> {
                         print("Directory is not empty. Use it anyway? [Y/y or N/n]: ")
-                        if (readLine()?.trim().equals("y", ignoreCase = true)) {
+                        if (readlnOrNull()?.trim().equals("y", ignoreCase = true)) {
                             return dir
                         }
                     }

@@ -60,7 +60,7 @@ class CopyCatApplication {
         var selectedFileTypes = listOf<String>()
         while (userAnswer != Answer.YES) {
             println("Please select what file types should be copied like this: jpg png or [Q/q] to quit")
-            val enteredLine = readLine()
+            val enteredLine = readlnOrNull()
             if (enteredLine != null) {
                 val trimmedLine = enteredLine.trim()
                 if (trimmedLine.lowercase() == "q") {

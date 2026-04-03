@@ -16,7 +16,7 @@ fun main() {
         copyCat.letUserSelectFileTypesToBeCopied(config)
         copyCat.letUserSelectTempDirectory(config)
         copyCat.copyFilesWithProgress(config)
-    } catch (e: UserWantsToQuitProgramException) {
+    } catch (_: UserWantsToQuitProgramException) {
         println("User is quitting the program...")
         return
     }
