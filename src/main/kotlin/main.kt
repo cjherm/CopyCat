@@ -8,6 +8,11 @@ import exceptions.UserWantsToQuitProgramException
 
 fun main(args: Array<String>) {
 
+    if (args.isEmpty()) {
+        startShell()
+        return
+    }
+
     val argCatcher = CopyCatArgumentCatcher(args)
 
     if (argCatcher.requestsGui()) {
@@ -20,15 +25,7 @@ fun main(args: Array<String>) {
     if (config != null) {
         // When all arguments are provided and no GUI requests, we will launch CopyCat directly without a Shell nor GUI
         startImmediateExecution(config)
-        return
     }
-
-    main()
-}
-
-fun main() {
-    // When no or not all arguments are provided and no GUI requests, we will launch CopyCat for Shell
-    startShell()
 }
 
 private fun startShell() {
