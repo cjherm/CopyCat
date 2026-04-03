@@ -5,6 +5,9 @@ import arguments.ArgumentKey
 import arguments.MultiValueArgument
 import arguments.NoValueArgument
 import arguments.SingleValueArgument
+import utility.ConsolePrinter.Companion.printRed
+import utility.FileHelper
+import java.io.File
 
 class CopyCatArgumentCatcher(private val args: Array<String>) {
 
@@ -18,9 +21,49 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
     }
 
     fun getConfig(): CopyCatConfiguration? {
-        // TODO
-        return null
+        val srcDir  = File(argsList.singleValueOf(ArgumentKey.SRC)  ?: "")
+        val compDir = File(argsList.singleValueOf(ArgumentKey.COMP) ?: "")
+        val destDir = File(argsList.singleValueOf(ArgumentKey.DEST) ?: "")
+        val types   = argsList.multiValuesOf(ArgumentKey.TYPES)
+
+        if (!srcDir.isValidDirectory()) {
+            printRed("Source directory is invalid or does not exist: ${srcDir.absolutePath}")
+            return null
+        }
+        if (!compDir.isValidDirectory()) {
+            printRed("Comparison directory is invalid or does not exist: ${compDir.absolutePath}")
+            return null
+        }
+        if (!destDir.isValidDirectory()) {
+            printRed("Destination directory is invalid or does not exist: ${destDir.absolutePath}")
+            return null
+        }
+        if (srcDir == compDir) {
+            printRed("Source and comparison directory must not be the same.")
+            return null
+        }
+
+        val uniqueFiles = FileHelper.findMissingFilesGroupedByType(srcDir, compDir)
+        val filesSelectedToBeCopied = if (types.isEmpty()) {
+            uniqueFiles.values.flatten()
+        } else {
+            types.mapNotNull { uniqueFiles[it] }.flatten()
+        }
+
+        return CopyCatConfiguration(
+            sourceDir = srcDir,
+            copyDestDir = destDir,
+            filesSelectedToBeCopied = filesSelectedToBeCopied
+        )
     }
+
+    private fun File.isValidDirectory() = exists() && isDirectory
+
+    private fun List<Argument>.singleValueOf(key: ArgumentKey): String? =
+        filterIsInstance<SingleValueArgument>().find { it.key == key.key }?.value
+
+    private fun List<Argument>.multiValuesOf(key: ArgumentKey): List<String> =
+        filterIsInstance<MultiValueArgument>().find { it.key == key.key }?.values ?: emptyList()
 
     private fun parseArgs(): List<Argument> {
         val queue = ArrayDeque(args.toList())
