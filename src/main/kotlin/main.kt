@@ -1,23 +1,25 @@
 import app.CopyCatApplication
-import app.CopyCatConfiguration
+import app.CopyCatShell
 import app.CopyCatConfigurationBuilder
 import exceptions.UserWantsToQuitProgramException
 
 
-fun main() {
+fun main(args: Array<String>) {
+    startShell()
+}
 
-    val config: CopyCatConfiguration
-    val copyCat = CopyCatApplication()
-
+private fun startShell() {
+    val ccShell = CopyCatShell()
+    val ccApp = CopyCatApplication()
     try {
         val cfgBuilder = CopyCatConfigurationBuilder()
-        copyCat.showWelcome()
-        copyCat.getSrcAndTargetDirectoriesFromUser(cfgBuilder)
-        copyCat.createUniqueFilesLists(cfgBuilder)
-        copyCat.letUserSelectFileTypesToBeCopied(cfgBuilder)
-        copyCat.letUserSelectTempDirectory(cfgBuilder)
-        config = cfgBuilder.build()
-        copyCat.copyFilesWithProgress(config)
+        ccShell.showWelcome()
+        ccShell.getSrcAndTargetDirectoriesFromUser(cfgBuilder)
+        ccShell.createUniqueFilesLists(cfgBuilder)
+        ccShell.letUserSelectFileTypesToBeCopied(cfgBuilder)
+        ccShell.letUserSelectTempDirectory(cfgBuilder)
+        val config = cfgBuilder.build()
+        ccApp.launch(config)
     } catch (_: UserWantsToQuitProgramException) {
         println("User is quitting the program...")
         return
