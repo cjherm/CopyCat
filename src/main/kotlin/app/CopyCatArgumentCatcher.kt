@@ -1,6 +1,7 @@
 package app
 
 import arguments.Argument
+import arguments.ArgumentKey
 import arguments.MultiValueArgument
 import arguments.NoValueArgument
 import arguments.SingleValueArgument
@@ -9,9 +10,19 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
 
     private val argsList: List<Argument> = parseArgs()
 
-    fun requestsGui() = argsList.contains(NoValueArgument(Argument.GUI))
+    fun requestsGui(): Boolean {
+        val result = argsList.contains(NoValueArgument(ArgumentKey.GUI.key))
+        println("requestsGui = $result")
+        println(argsList)
+        return result
+    }
 
-    fun hasSufficientArgs(): Boolean = false
+    fun hasSufficientArgs(): Boolean {
+        val result = false
+        println("hasSufficientArgs = $result")
+        println(argsList)
+        return result
+    }
 
     fun getConfig(): CopyCatConfiguration = CopyCatConfiguration(
         sourceDir = java.io.File(""),
@@ -25,27 +36,27 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
             while (queue.isNotEmpty()) {
                 val arg = queue.removeFirst()
                 if (!arg.startsWith("-")) continue
-                val key = arg.removePrefix("-")
+                val argumentKey = ArgumentKey.fromString(arg.removePrefix("-")) ?: continue
                 add(
-                    when (key) {
-                        Argument.SRC, Argument.DEST, Argument.COMP, Argument.LOG ->
-                            SingleValueArgument(key, queue.removeFirstOrNull() ?: "")
+                    when (argumentKey) {
+                        ArgumentKey.SRC, ArgumentKey.DEST, ArgumentKey.COMP, ArgumentKey.LOG ->
+                            SingleValueArgument(argumentKey.key, queue.removeFirstOrNull() ?: "")
 
-                        Argument.TYPES ->
-                            MultiValueArgument(key, drainWhile { !it.startsWith("-") })
+                        ArgumentKey.TYPES ->
+                            MultiValueArgument(argumentKey.key, drainWhile(queue) { !it.startsWith("-") })
 
-                        else ->
-                            NoValueArgument(key)
+                        ArgumentKey.GUI ->
+                            NoValueArgument(argumentKey.key)
                     }
                 )
             }
         }
     }
 
-    private fun drainWhile(predicate: (String) -> Boolean): List<String> =
+    private fun drainWhile(queue: ArrayDeque<String>, predicate: (String) -> Boolean): List<String> =
         buildList {
-            while (isNotEmpty() && predicate(first())) {
-                add(removeFirst())
+            while (queue.isNotEmpty() && predicate(queue.first())) {
+                add(queue.removeFirst())
             }
         }
 }
