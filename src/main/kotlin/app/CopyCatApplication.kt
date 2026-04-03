@@ -11,7 +11,7 @@ import java.io.IOException
 
 class CopyCatApplication {
 
-    fun getSrcAndTargetDirectoriesFromUser(config: CopyCatConfiguration) {
+    fun getSrcAndTargetDirectoriesFromUser(config: CopyCatConfigurationBuilder) {
         var srcDir = File("")
         var compareDir = File("")
         var promptForCompareDir = true
@@ -44,7 +44,7 @@ class CopyCatApplication {
         println("\t$filesInCompareDir files in \"${config.compareDir.absolutePath}\"")
     }
 
-    fun createUniqueFilesLists(config: CopyCatConfiguration) {
+    fun createUniqueFilesLists(config: CopyCatConfigurationBuilder) {
         val userAnswer = FileHelper.askQuestionAndRequestAnswer("Start to search for unique files in source directory?")
         if (userAnswer != Answer.YES) {
             throw UserWantsToQuitProgramException()
@@ -55,7 +55,7 @@ class CopyCatApplication {
         FileHelper.printAllTypesOfUniqueFiles(uniqueFilesList)
     }
 
-    fun letUserSelectFileTypesToBeCopied(config: CopyCatConfiguration) {
+    fun letUserSelectFileTypesToBeCopied(config: CopyCatConfigurationBuilder) {
         var userAnswer = Answer.UNDEFINED
         var selectedFileTypes = listOf<String>()
         while (userAnswer != Answer.YES) {
@@ -157,7 +157,7 @@ class CopyCatApplication {
         println("Failed to copy due to error: $failedCount")
     }
 
-    fun letUserSelectTempDirectory(config: CopyCatConfiguration) {
+    fun letUserSelectTempDirectory(config: CopyCatConfigurationBuilder) {
         config.useSeparateDestDir =
             FileHelper.promptForBoolean("Do you want to use a separate destination directory? If not, then CopyCat will use this one?: ${config.compareDir.absolutePath}")
         if (config.useSeparateDestDir) {
