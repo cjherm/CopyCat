@@ -44,6 +44,10 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
             return null
         }
 
+        // TODO 1 this does not seem to work properly, it still seems to include files from different types then requested
+        // TODO 2 when -types is missing or it does not have a value, then we include all files
+        // TODO 3 make sure we only include unique files
+        // TODO 4 when -comp is not present, then we diff against the destination dir
         val uniqueFiles = FileHelper.findMissingFilesGroupedByType(srcDir, compDir)
         val filesSelectedToBeCopied = if (types.isEmpty()) {
             uniqueFiles.values.flatten()

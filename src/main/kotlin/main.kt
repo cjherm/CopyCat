@@ -48,13 +48,13 @@ private fun startShell() {
 
 private fun startGui() {
     println("startGui() WORK IN PROGRESS")
-    // TODO
+    // TODO 5 implement GUI
 }
 
 private fun startImmediateExecution(config: CopyCatConfiguration) {
     println("startImmediateExecution() WORK IN PROGRESS")
     println(config)
-    // TODO
+    // TODO 6 implement immediate execution via command-line arguments
     //val ccApp = CopyCatApplication()
     //ccApp.launch(config)
 }
