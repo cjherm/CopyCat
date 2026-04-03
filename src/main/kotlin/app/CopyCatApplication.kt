@@ -2,6 +2,8 @@ package app
 
 import exceptions.UserWantsToQuitProgramException
 import user.UserInteraction.Answer
+import utility.ConsolePrinter.Companion.printYellow
+import utility.ConsolePrinter.Companion.printWhite
 import utility.FileHelper
 import java.io.File
 import java.io.IOException
@@ -149,9 +151,14 @@ class CopyCatApplication {
     }
 
     fun showWelcome() {
-        println("Welcome to CopyCat!")
-        println("This little helper will copy all files from a source directory which are new compared to the files in a directory of your choosing!")
-        println("Let's get started, shall we?")
+        printWhite("\n***************************************************")
+        printYellow("\n\tWelcome to CopyCat!\n")
+        println(
+            "This little helper will copy all files from\n" +
+                    "a source directory which are new compared to\n" +
+                    "the files in a directory of your choosing!"
+        )
+        println("Let's get started, shall we?\n")
         println("***************************************************")
     }
 }
