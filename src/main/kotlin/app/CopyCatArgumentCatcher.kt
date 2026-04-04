@@ -18,53 +18,123 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
         return argsList.contains(NoValueArgument(ArgumentKey.GUI.key))
     }
 
-    fun getConfig(): CopyCatConfiguration? {
-        val srcDir  = File(argsList.singleValueOf(ArgumentKey.SRC)  ?: "")
-        val compDir = File(argsList.singleValueOf(ArgumentKey.COMP) ?: "")
-        val destDir = File(argsList.singleValueOf(ArgumentKey.DEST) ?: "")
-        val types   = argsList.multiValuesOf(ArgumentKey.TYPES)
+    fun retrieveSrcDirFromArg(): File? {
+        val argValue = argsList.singleValueOf(ArgumentKey.SRC) ?: ""
+        if (argValue.isEmpty()) {
+            printRed("Missing path for source directory: \"$argValue\"!")
+            return null
+        }
 
-        val logFilePath = argsList.singleValueOf(ArgumentKey.LOGF)
-        if (logFilePath != null) Logger.logFile = File(logFilePath)
-        if (argsList.contains(NoValueArgument(ArgumentKey.LOGC.key))) Logger.printToConsole = true
-
+        val srcDir = File(argValue)
         if (!srcDir.isValidDirectory()) {
             printRed("Source directory is invalid or does not exist: ${srcDir.absolutePath}")
             return null
         }
-        if (!compDir.isValidDirectory()) {
-            printRed("Comparison directory is invalid or does not exist: ${compDir.absolutePath}")
+
+        srcDir.listFiles()?.size?.let {
+            if (it <= 0) {
+                printRed("Source directory is empty!")
+                return null
+            }
+        }
+
+        Logger.info("Set source directory: ${srcDir.absolutePath}")
+        return srcDir
+    }
+
+    fun retrieveDestDirFromArg(srcDir: File?): File? {
+        val argValue = argsList.singleValueOf(ArgumentKey.DEST) ?: ""
+        if (argValue.isEmpty()) {
+            printRed("Missing path for destination directory: \"$argValue\"!")
             return null
         }
+
+        val destDir = File(argValue)
         if (!destDir.isValidDirectory()) {
+            printRed("Destination directory is invalid or does not exist: ${destDir.absolutePath}")
+            return null
+        }
+        if (destDir == srcDir) {
+            printRed("Destination directory cannot be the same as the source directory!")
+            return null
+        }
+        if (srcDir != null && !destDir.isValidDirectory()) {
             destDir.mkdirs()
             if (!destDir.isValidDirectory()) {
                 printRed("Destination directory could not be created: ${destDir.absolutePath}")
                 return null
             }
-            println("Destination directory created: ${destDir.absolutePath}")
+            Logger.info("Destination directory created.")
         }
-        if (srcDir == compDir) {
-            printRed("Source and comparison directory must not be the same.")
+
+        Logger.info("Set destination directory: ${destDir.absolutePath}")
+        return destDir
+    }
+
+    fun retrieveCompDirFromArg(srcDir: File?): File? {
+        val argValue = argsList.singleValueOf(ArgumentKey.COMP) ?: ""
+        if (argValue.isEmpty()) {
+            printRed("Missing path for diff directory: \"$argValue\"!")
             return null
         }
 
-        // TODO 1 this does not seem to work properly, it still seems to include files from different types then requested
-        // TODO 2 when -types is missing or it does not have a value, then we include all files
-        // TODO 3 make sure we only include unique files
-        // TODO 4 when -comp is not present, then we diff against the destination dir
-        val uniqueFiles = FileHelper.findMissingFilesGroupedByType(srcDir, compDir)
-        val filesSelectedToBeCopied = if (types.isEmpty()) {
-            uniqueFiles.values.flatten()
-        } else {
-            types.mapNotNull { uniqueFiles[it] }.flatten()
+        val compDir = File(argValue)
+        if (!compDir.isValidDirectory()) {
+            printRed("Diff directory is invalid or does not exist: ${compDir.absolutePath}")
+            return null
         }
+        if (compDir == srcDir) {
+            printRed("Destination directory cannot be the same as the source directory!")
+            return null
+        }
+
+        Logger.info("Set diff directory: ${compDir.absolutePath}")
+        return compDir
+    }
+
+    private fun retrieveTypesFromArg(): List<String> {
+        val types = argsList.multiValuesOf(ArgumentKey.TYPES)
+        Logger.info("Types selected: ${types.toList()}")
+        return types
+    }
+
+    private fun retrieveLogSettingsFromArg() {
+        val logFilePath = argsList.singleValueOf(ArgumentKey.LOGF)
+        if (logFilePath != null) Logger.logFile = File(logFilePath)
+        if (argsList.contains(NoValueArgument(ArgumentKey.LOGC.key))) Logger.printToConsole = true
+    }
+
+    fun getConfig(): CopyCatConfiguration? {
+        retrieveLogSettingsFromArg()
+        val srcDir = retrieveSrcDirFromArg()
+        val compDirTemp = retrieveCompDirFromArg(srcDir)
+        val destDir = retrieveDestDirFromArg(srcDir)
+        val types = retrieveTypesFromArg()
+
+        if (srcDir == null || destDir == null) {
+            return null
+        }
+
+        val compDir = compDirTemp ?: destDir
+
+        // TODO 1 this does not seem to work properly, it still seems to include files from different types then requested
+        // TODO 3 make sure we only include unique files
+        val filesSelectedToBeCopied = calculateFilesToCopy(srcDir, compDir, types)
 
         return CopyCatConfiguration(
             sourceDir = srcDir,
             copyDestDir = destDir,
             filesSelectedToBeCopied = filesSelectedToBeCopied
         )
+    }
+
+    private fun calculateFilesToCopy(srcDir: File, compDir: File, types: List<String>): List<File> {
+        val uniqueFiles = FileHelper.findMissingFilesGroupedByType(srcDir, compDir)
+        return if (types.isEmpty()) {
+            uniqueFiles.values.flatten()
+        } else {
+            types.mapNotNull { uniqueFiles[it] }.flatten()
+        }
     }
 
     private fun File.isValidDirectory() = exists() && isDirectory
