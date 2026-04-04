@@ -2,7 +2,8 @@ package arguments
 
 enum class ArgumentKey(val key: String) {
     GUI("gui"),
-    LOG("log"),
+    LOGF("logf"),
+    LOGC("logc"),
     SRC("src"),
     DEST("dest"),
     COMP("comp"),

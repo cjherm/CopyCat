@@ -28,8 +28,15 @@ You can skip the interactive prompts by passing arguments directly:
 | `-dest <path>` | Path to the destination directory (where files will be copied to) |
 | `-comp <path>` | Path to the directory to compare against for duplicates |
 | `-types <ext...>` | One or more file extensions to include, e.g. `-types jpg png mp4` |
-| `-log <path>` | Path to a log file |
+| `-logf <path>` | Write log output to a file at the given path |
+| `-logc` | Print log output to the console |
 | `-gui` | Launch with a graphical interface (not yet available) |
+
+Both `-logf` and `-logc` can be combined to log to a file and the console at the same time:
+
+```
+java -jar CopyCat.jar -src C:\Photos\SD -dest C:\Photos\Archive -comp C:\Photos\Archive -logf C:\logs\copycat.log -logc
+```
 
 When all required arguments are provided, CopyCat runs immediately without any prompts.
 

@@ -7,6 +7,7 @@ import arguments.NoValueArgument
 import arguments.SingleValueArgument
 import utility.ConsolePrinter.Companion.printRed
 import utility.FileHelper
+import utility.Logger
 import java.io.File
 
 class CopyCatArgumentCatcher(private val args: Array<String>) {
@@ -22,6 +23,10 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
         val compDir = File(argsList.singleValueOf(ArgumentKey.COMP) ?: "")
         val destDir = File(argsList.singleValueOf(ArgumentKey.DEST) ?: "")
         val types   = argsList.multiValuesOf(ArgumentKey.TYPES)
+
+        val logFilePath = argsList.singleValueOf(ArgumentKey.LOGF)
+        if (logFilePath != null) Logger.logFile = File(logFilePath)
+        if (argsList.contains(NoValueArgument(ArgumentKey.LOGC.key))) Logger.printToConsole = true
 
         if (!srcDir.isValidDirectory()) {
             printRed("Source directory is invalid or does not exist: ${srcDir.absolutePath}")
@@ -79,13 +84,13 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
                 val argumentKey = ArgumentKey.fromString(arg.removePrefix("-")) ?: continue
                 add(
                     when (argumentKey) {
-                        ArgumentKey.SRC, ArgumentKey.DEST, ArgumentKey.COMP, ArgumentKey.LOG ->
+                        ArgumentKey.SRC, ArgumentKey.DEST, ArgumentKey.COMP, ArgumentKey.LOGF ->
                             SingleValueArgument(argumentKey.key, queue.removeFirstOrNull() ?: "")
 
                         ArgumentKey.TYPES ->
                             MultiValueArgument(argumentKey.key, drainWhile(queue) { !it.startsWith("-") })
 
-                        ArgumentKey.GUI ->
+                        ArgumentKey.GUI, ArgumentKey.LOGC ->
                             NoValueArgument(argumentKey.key)
                     }
                 )
