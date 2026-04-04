@@ -4,6 +4,7 @@ import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+// TODO 7 impl and test logging
 object Logger {
 
     private const val MAX_BUFFER_SIZE = 1000
