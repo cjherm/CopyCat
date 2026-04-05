@@ -1,7 +1,8 @@
-package app
+package cli
 
-import exceptions.UserWantsToQuitProgramException
-import user.UserInteraction.Answer
+import config.CopyCatConfigurationBuilder
+import utility.Answer
+import utility.UserWantsToQuitProgramException
 import utility.ConsolePrinter.Companion.printRed
 import utility.ConsolePrinter.Companion.printWhite
 import utility.ConsolePrinter.Companion.printYellow
