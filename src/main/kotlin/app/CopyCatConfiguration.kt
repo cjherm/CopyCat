@@ -8,11 +8,9 @@ class CopyCatConfiguration(
     val filesSelectedToBeCopied: List<File>,
 ) {
     override fun toString(): String {
-        return """
-            |CopyCat Configuration
-            |  Source directory   : ${sourceDir.absolutePath}
-            |  Destination        : ${copyDestDir.absolutePath}
-            |  Files to copy      : ${filesSelectedToBeCopied.size}
-        """.trimMargin()
+        return "CopyCat Configuration:\n" +
+                "                            \tSource directory: ${sourceDir.absolutePath}\n" +
+                "                            \tDestination:      ${copyDestDir.absolutePath}\n" +
+                "                            \tFiles to copy:    ${filesSelectedToBeCopied.size}"
     }
 }
