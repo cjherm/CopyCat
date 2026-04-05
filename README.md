@@ -22,15 +22,15 @@ If no arguments are provided, CopyCat starts in interactive shell mode and guide
 
 You can skip the interactive prompts by passing arguments directly:
 
-| Argument | Description |
-|---|---|
-| `-src <path>` | Path to the source directory (the one you want to copy from) |
-| `-dest <path>` | Path to the destination directory (where files will be copied to) |
-| `-comp <path>` | Path to the directory to compare against for duplicates |
-| `-types <ext...>` | One or more file extensions to include, e.g. `-types jpg png mp4` |
-| `-logf <path>` | Write log output to a file at the given path |
-| `-logc` | Print log output to the console |
-| `-gui` | Launch with a graphical interface (not yet available) |
+| Argument | Required | Description |
+| --- | --- | --- |
+| `-src <path>` | Required | Path to the source directory (the one you want to copy from) |
+| `-dest <path>` | Required | Path to the destination directory (where files will be copied to) |
+| `-comp <path>` | Optional | Path to the directory to compare against for duplicates. Defaults to `-dest` when omitted |
+| `-types <ext...>` | Optional | One or more file extensions to include, e.g. `-types jpg png mp4`. All types are included when omitted |
+| `-logf <path>` | Optional | Write log output to a file at the given path |
+| `-logc` | Optional | Print log output to the console |
+| `-gui` | Optional | Launch with a graphical interface (not yet available) |
 
 Both `-logf` and `-logc` can be combined to log to a file and the console at the same time:
 
