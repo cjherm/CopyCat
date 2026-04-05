@@ -1,4 +1,4 @@
-package arguments
+package cli.arguments
 
 enum class ArgumentKey(val key: String) {
     GUI("gui"),
