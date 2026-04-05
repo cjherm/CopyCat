@@ -18,6 +18,3 @@ if errorlevel 1 (
 echo Build succeeded.
 copy /Y "build\libs\CopyCat-1.0-SNAPSHOT.jar" "CopyCat.jar"
 echo JAR copied to project root as CopyCat.jar
-
-:: Keep the console window open after the program exits so you can read any output
-pause
