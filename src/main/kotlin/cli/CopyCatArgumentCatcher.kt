@@ -1,6 +1,7 @@
-package app
+package cli
 
-import arguments.*
+import cli.arguments.*
+import config.CopyCatConfiguration
 import utility.FileHelper
 import utility.Logger
 import java.io.File

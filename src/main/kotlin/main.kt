@@ -4,6 +4,7 @@ import app.CopyCatConfiguration
 import app.CopyCatShell
 import app.CopyCatConfigurationBuilder
 import exceptions.UserWantsToQuitProgramException
+import cli.CopyCatArgumentCatcher
 import utility.Logger
 
 
