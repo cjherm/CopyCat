@@ -4,6 +4,7 @@ import app.CopyCatConfiguration
 import app.CopyCatShell
 import app.CopyCatConfigurationBuilder
 import exceptions.UserWantsToQuitProgramException
+import utility.Logger
 
 
 fun main(args: Array<String>) {
@@ -14,6 +15,7 @@ fun main(args: Array<String>) {
     }
 
     val argCatcher = CopyCatArgumentCatcher(args)
+    val config = argCatcher.getConfig()
 
     if (argCatcher.requestsGui()) {
         // Like CopyCatShell but with a GUI
@@ -21,10 +23,11 @@ fun main(args: Array<String>) {
         return
     }
 
-    val config = argCatcher.getConfig()
     if (config != null) {
         // When all arguments are provided and no GUI requests, we will launch CopyCat directly without a Shell nor GUI
         startImmediateExecution(config)
+    } else {
+        Logger.error("Missing or invalid arguments for immediate execution! Please add at least \"-src PATH -dest PATH\" as minimum!")
     }
 }
 
@@ -41,19 +44,19 @@ private fun startShell() {
         val config = cfgBuilder.build()
         ccApp.launch(config)
     } catch (_: UserWantsToQuitProgramException) {
-        println("User is quitting the program...")
+        Logger.info("User is quitting the program...")
         return
     }
 }
 
 private fun startGui() {
-    println("startGui() WORK IN PROGRESS")
+    Logger.warn("startGui() WORK IN PROGRESS")
     // TODO 5 implement GUI
 }
 
 private fun startImmediateExecution(config: CopyCatConfiguration) {
-    println("startImmediateExecution() WORK IN PROGRESS")
-    println(config)
+    Logger.warn("startImmediateExecution() WORK IN PROGRESS")
+    Logger.info(config.toString())
     // TODO 6 implement immediate execution via command-line arguments
     //val ccApp = CopyCatApplication()
     //ccApp.launch(config)
