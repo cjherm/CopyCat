@@ -1,3 +1,3 @@
-package arguments
+package cli.arguments
 
 data class SingleValueArgument(val key: String, val value: String) : Argument()
