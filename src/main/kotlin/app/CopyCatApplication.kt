@@ -1,11 +1,12 @@
 package app
 
+import utility.Logger
 import java.io.File
 import java.io.IOException
 
 class CopyCatApplication {
     fun launch(config: CopyCatConfiguration) {
-        println("Starting copy process...")
+        Logger.info("Starting copy process...")
         val files = config.filesSelectedToBeCopied
         val sourceDir = config.sourceDir
         val destDir = config.copyDestDir
@@ -16,7 +17,7 @@ class CopyCatApplication {
 
         val totalFiles = files.size
         if (totalFiles == 0) {
-            println("No files to copy.")
+            Logger.warn("No files to copy.")
             return
         }
 
@@ -50,21 +51,21 @@ class CopyCatApplication {
                 if ((totalFiles <= 10 && copiedCount == totalFiles) ||
                     (totalFiles > 10 && copiedCount % logStep == 0)
                 ) {
-                    println("Copied $copiedCount / $totalFiles files...")
+                    Logger.info("Copied $copiedCount / $totalFiles files...")
                 }
 
             } catch (e: IOException) {
-                println("Failed to copy ${file.name}: ${e.message}")
+                Logger.error("Failed to copy ${file.name}: ${e.message}")
                 failedCount++
             } catch (e: IllegalArgumentException) {
-                println("Path error for ${file.absolutePath}: ${e.message}")
+                Logger.error("Path error for ${file.absolutePath}: ${e.message}")
                 failedCount++
             }
         }
 
-        println("Finished copying.")
-        println("Copied files: $copiedCount")
-        println("Skipped files (already existed): $skippedCount")
-        println("Failed to copy due to error: $failedCount")
+        Logger.info("Finished copying.")
+        Logger.info("Copied files: $copiedCount")
+        Logger.info("Skipped files (already existed): $skippedCount")
+        Logger.info("Failed to copy due to error: $failedCount")
     }
 }
