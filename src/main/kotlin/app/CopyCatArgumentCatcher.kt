@@ -6,6 +6,7 @@ import arguments.MultiValueArgument
 import arguments.NoValueArgument
 import arguments.SingleValueArgument
 import utility.ConsolePrinter.Companion.printRed
+import utility.ConsolePrinter.Companion.printWhite
 import utility.FileHelper
 import utility.Logger
 import java.io.File
@@ -15,25 +16,29 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
     private val argsList: List<Argument> = parseArgs()
 
     fun requestsGui(): Boolean {
-        return argsList.contains(NoValueArgument(ArgumentKey.GUI.key))
+        val requestedGui = argsList.contains(NoValueArgument(ArgumentKey.GUI.key))
+        if (requestedGui) {
+            Logger.info("Requested GUI")
+        }
+        return requestedGui
     }
 
     fun retrieveSrcDirFromArg(): File? {
         val argValue = argsList.singleValueOf(ArgumentKey.SRC) ?: ""
         if (argValue.isEmpty()) {
-            printRed("Missing path for source directory: \"$argValue\"!")
+            Logger.error("Missing path for source directory! Please add via \"-src PATH\"!")
             return null
         }
 
         val srcDir = File(argValue)
         if (!srcDir.isValidDirectory()) {
-            printRed("Source directory is invalid or does not exist: ${srcDir.absolutePath}")
+            Logger.error("Source directory is invalid or does not exist: ${srcDir.absolutePath}")
             return null
         }
 
         srcDir.listFiles()?.size?.let {
             if (it <= 0) {
-                printRed("Source directory is empty!")
+                Logger.error("Source directory is empty!")
                 return null
             }
         }
@@ -45,23 +50,25 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
     fun retrieveDestDirFromArg(srcDir: File?): File? {
         val argValue = argsList.singleValueOf(ArgumentKey.DEST) ?: ""
         if (argValue.isEmpty()) {
-            printRed("Missing path for destination directory: \"$argValue\"!")
+            Logger.error("Missing path for source directory! Please add via \"-dest PATH\"!")
             return null
         }
 
         val destDir = File(argValue)
         if (!destDir.isValidDirectory()) {
-            printRed("Destination directory is invalid or does not exist: ${destDir.absolutePath}")
+            Logger.warn("Destination directory is invalid or does not exist and must be created: ${destDir.absolutePath}")
             return null
         }
+
         if (destDir == srcDir) {
-            printRed("Destination directory cannot be the same as the source directory!")
+            Logger.error("Destination directory cannot be the same as the source directory!")
             return null
         }
+
         if (srcDir != null && !destDir.isValidDirectory()) {
             destDir.mkdirs()
             if (!destDir.isValidDirectory()) {
-                printRed("Destination directory could not be created: ${destDir.absolutePath}")
+                Logger.error("Destination directory could not be created: ${destDir.absolutePath}")
                 return null
             }
             Logger.info("Destination directory created.")
@@ -74,17 +81,16 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
     fun retrieveCompDirFromArg(srcDir: File?): File? {
         val argValue = argsList.singleValueOf(ArgumentKey.COMP) ?: ""
         if (argValue.isEmpty()) {
-            printRed("Missing path for diff directory: \"$argValue\"!")
             return null
         }
 
         val compDir = File(argValue)
         if (!compDir.isValidDirectory()) {
-            printRed("Diff directory is invalid or does not exist: ${compDir.absolutePath}")
+            Logger.error("Diff directory is invalid or does not exist: ${compDir.absolutePath}")
             return null
         }
         if (compDir == srcDir) {
-            printRed("Destination directory cannot be the same as the source directory!")
+            Logger.error("Diff directory cannot be the same as the source directory!")
             return null
         }
 
@@ -94,7 +100,11 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
 
     private fun retrieveTypesFromArg(): List<String> {
         val types = argsList.multiValuesOf(ArgumentKey.TYPES)
-        Logger.info("Types selected: ${types.toList()}")
+        if (types.isEmpty()) {
+            Logger.info("No file type filter set, will consider all files in source directory!")
+        } else {
+            Logger.info("Types selected: ${types.toList()}")
+        }
         return types
     }
 
