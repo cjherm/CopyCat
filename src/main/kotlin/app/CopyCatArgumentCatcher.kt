@@ -1,12 +1,6 @@
 package app
 
-import arguments.Argument
-import arguments.ArgumentKey
-import arguments.MultiValueArgument
-import arguments.NoValueArgument
-import arguments.SingleValueArgument
-import utility.ConsolePrinter.Companion.printRed
-import utility.ConsolePrinter.Companion.printWhite
+import arguments.*
 import utility.FileHelper
 import utility.Logger
 import java.io.File
