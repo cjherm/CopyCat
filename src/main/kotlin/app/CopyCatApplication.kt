@@ -1,5 +1,6 @@
 package app
 
+import config.CopyCatConfiguration
 import utility.Logger
 import java.io.File
 import java.io.IOException

@@ -1,10 +1,9 @@
 import app.CopyCatApplication
-import app.CopyCatArgumentCatcher
-import app.CopyCatConfiguration
-import app.CopyCatShell
-import app.CopyCatConfigurationBuilder
-import exceptions.UserWantsToQuitProgramException
 import cli.CopyCatArgumentCatcher
+import cli.CopyCatShell
+import config.CopyCatConfiguration
+import config.CopyCatConfigurationBuilder
+import utility.UserWantsToQuitProgramException
 import utility.Logger
 
 
