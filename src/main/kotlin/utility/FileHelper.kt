@@ -1,6 +1,5 @@
 package utility
 
-import exceptions.UserWantsToQuitProgramException
 import utility.ConsolePrinter.Companion.printGreen
 import utility.ConsolePrinter.Companion.printRed
 import utility.ConsolePrinter.Companion.printYellow
