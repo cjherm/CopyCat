@@ -20,8 +20,8 @@ object Logger {
 
     private val logBuffer = mutableListOf<String>()
 
-    fun info(msg: String) = log(msg, "[INFO]") { ConsolePrinter.printWhite(it) }
-    fun warn(msg: String) = log(msg, "[WARN]") { ConsolePrinter.printYellow(it) }
+    fun info(msg: String) = log(msg, "[INFO] ") { ConsolePrinter.printWhite(it) }
+    fun warn(msg: String) = log(msg, "[WARN] ") { ConsolePrinter.printYellow(it) }
     fun error(msg: String) = log(msg, "[ERROR]") { ConsolePrinter.printRed(it) }
 
     private fun log(msg: String, prefix: String, consolePrint: (String) -> Unit) {
