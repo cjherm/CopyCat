@@ -25,7 +25,7 @@ class FileHelper {
                         }
                     }
 
-                    else -> printRed("❌ Path does not exist. Please try again.")
+                    else -> printRed("Path does not exist. Please try again.")
                 }
             }
         }
@@ -56,8 +56,8 @@ class FileHelper {
 
         private fun askToUseParentDirectory(file: File): Boolean {
             val parent = file.parent ?: return false
-            printYellow("⚠️ That path is a file.")
-            val message = "Do you want to use the containing directory ($parent) instead? [y/N]: "
+            printYellow("That path is a file.")
+            val message = "Do you want to use the containing directory ($parent) instead? [y/Y or n/N]: "
             val answer = promptUser(message)
             return answer.equals("y", ignoreCase = true)
         }
@@ -131,8 +131,8 @@ class FileHelper {
             }
 
             if (finalEntries.isEmpty()) {
-                printRed("No unique files found!")
-                return
+                printRed("\tNo unique files found!")
+                throw RestartProgramException()
             }
 
             // Calculate padding
