@@ -1,13 +1,15 @@
 package app
 
 import config.CopyCatConfiguration
-import utility.Logger
+import utility.ConsolePrinter.Companion.printRed
+import utility.ConsolePrinter.Companion.printWhite
+import utility.ConsolePrinter.Companion.printYellow
 import java.io.File
 import java.io.IOException
 
 class CopyCatApplication {
     fun launch(config: CopyCatConfiguration) {
-        Logger.info("Starting copy process...")
+        printWhite("Starting copy process...")
         val files = config.filesSelectedToBeCopied
         val sourceDir = config.sourceDir
         val destDir = config.copyDestDir
@@ -18,7 +20,7 @@ class CopyCatApplication {
 
         val totalFiles = files.size
         if (totalFiles == 0) {
-            Logger.warn("No files to copy.")
+            printYellow("No files to copy.")
             return
         }
 
@@ -52,21 +54,21 @@ class CopyCatApplication {
                 if ((totalFiles <= 10 && copiedCount == totalFiles) ||
                     (totalFiles > 10 && copiedCount % logStep == 0)
                 ) {
-                    Logger.info("Copied $copiedCount / $totalFiles files...")
+                    printWhite("Copied $copiedCount / $totalFiles files...")
                 }
 
             } catch (e: IOException) {
-                Logger.error("Failed to copy ${file.name}: ${e.message}")
+                printRed("Failed to copy ${file.name}: ${e.message}")
                 failedCount++
             } catch (e: IllegalArgumentException) {
-                Logger.error("Path error for ${file.absolutePath}: ${e.message}")
+                printRed("Path error for ${file.absolutePath}: ${e.message}")
                 failedCount++
             }
         }
 
-        Logger.info("Finished copying.")
-        Logger.info("Copied files: $copiedCount")
-        Logger.info("Skipped files (already existed): $skippedCount")
-        Logger.info("Failed to copy due to error: $failedCount")
+        printWhite("Finished copying.")
+        printWhite("Copied files: $copiedCount")
+        printWhite("Skipped files (already existed): $skippedCount")
+        printWhite("Failed to copy due to error: $failedCount")
     }
 }
