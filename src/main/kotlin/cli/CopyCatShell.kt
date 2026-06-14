@@ -27,8 +27,11 @@ class CopyCatShell {
                     promptForCompareDir = true
                 }
             }
-            println("\t    Source directory:\n\t\t${srcDir.absolutePath}")
-            println("\tComparison directory:\n\t\t${compareDir.absolutePath}")
+            println("\t    Source directory: ${srcDir.absolutePath}")
+            println("\tComparison directory: ${compareDir.absolutePath}")
+
+            // in case we reloop this part because user answered it is not correct
+            promptForCompareDir = true
 
             userAnswer = FileHelper.askQuestionAndRequestAnswer("Is this correct?")
             if (userAnswer == Answer.QUIT) {
@@ -40,16 +43,12 @@ class CopyCatShell {
         config.compareDir = compareDir
         val filesInSrcDir = FileHelper.countFilesRecursively(config.sourceDir)
         val filesInCompareDir = FileHelper.countFilesRecursively(config.compareDir)
-        println("\t$filesInSrcDir files in \"${config.sourceDir.absolutePath}\"")
-        println("\t$filesInCompareDir files in \"${config.compareDir.absolutePath}\"")
+        println("\t$filesInSrcDir file/s in \"${config.sourceDir.absolutePath}\"")
+        println("\t$filesInCompareDir file/s in \"${config.compareDir.absolutePath}\"")
     }
 
     fun createUniqueFilesLists(config: CopyCatConfigurationBuilder) {
-        val userAnswer = FileHelper.askQuestionAndRequestAnswer("Start to search for unique files in source directory?")
-        if (userAnswer != Answer.YES) {
-            throw UserWantsToQuitProgramException()
-        }
-        println("Starting search...")
+        println("Start to searching for unique files in source directory...")
         val uniqueFilesList = FileHelper.findMissingFilesGroupedByType(config.sourceDir, config.compareDir)
         config.uniqueFiles = uniqueFilesList
         FileHelper.printAllTypesOfUniqueFiles(uniqueFilesList)
@@ -59,7 +58,7 @@ class CopyCatShell {
         var userAnswer = Answer.UNDEFINED
         var selectedFileTypes = listOf<String>()
         while (userAnswer != Answer.YES) {
-            println("Please select what file types should be copied like this: jpg png or [$] for all or [Q/q] to quit")
+            println("Please select what file types should be copied like this: jpg png or $ for all or Q/q to quit")
             val enteredLine = readlnOrNull()
             if (enteredLine != null) {
                 val trimmedLine = enteredLine.trim()
