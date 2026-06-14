@@ -3,8 +3,11 @@ import cli.CopyCatArgumentCatcher
 import cli.CopyCatShell
 import config.CopyCatConfiguration
 import config.CopyCatConfigurationBuilder
+import utility.ConsolePrinter.Companion.printRed
+import utility.ConsolePrinter.Companion.printWhite
+import utility.ConsolePrinter.Companion.printYellow
+import utility.RestartProgramException
 import utility.UserWantsToQuitProgramException
-import utility.Logger
 
 
 fun main(args: Array<String>) {
@@ -27,16 +30,20 @@ fun main(args: Array<String>) {
         // When all arguments are provided and no GUI requests, we will launch CopyCat directly without a Shell nor GUI
         startImmediateExecution(config)
     } else {
-        Logger.error("Missing or invalid arguments for immediate execution! Please add at least \"-src PATH -dest PATH\" as minimum!")
+        printRed("Missing or invalid arguments for immediate execution! Please add at least \"-src PATH -dest PATH\" as minimum!")
     }
 }
 
 private fun startShell() {
     val ccShell = CopyCatShell()
+    ccShell.showWelcome()
+    startUserInteraction(ccShell)
+}
+
+private fun startUserInteraction(ccShell: CopyCatShell) {
     val ccApp = CopyCatApplication()
     try {
         val cfgBuilder = CopyCatConfigurationBuilder()
-        ccShell.showWelcome()
         ccShell.getSrcAndTargetDirectoriesFromUser(cfgBuilder)
         ccShell.createUniqueFilesLists(cfgBuilder)
         ccShell.letUserSelectFileTypesToBeCopied(cfgBuilder)
@@ -44,19 +51,21 @@ private fun startShell() {
         val config = cfgBuilder.build()
         ccApp.launch(config)
     } catch (_: UserWantsToQuitProgramException) {
-        Logger.info("User is quitting the program...")
+        printWhite("User is quitting the program...")
         return
+    } catch (_: RestartProgramException) {
+        startUserInteraction(ccShell)
     }
 }
 
 private fun startGui() {
-    Logger.warn("startGui() WORK IN PROGRESS")
+    printYellow("startGui() WORK IN PROGRESS")
     // TODO 5 implement GUI
 }
 
 private fun startImmediateExecution(config: CopyCatConfiguration) {
-    Logger.warn("startImmediateExecution() WORK IN PROGRESS")
-    Logger.info(config.toString())
+    printYellow("startImmediateExecution() WORK IN PROGRESS")
+    printWhite(config.toString())
     // TODO 6 implement immediate execution via command-line arguments
     //val ccApp = CopyCatApplication()
     //ccApp.launch(config)
