@@ -9,44 +9,112 @@ import utility.ConsolePrinter.Companion.printWhite
 import utility.ConsolePrinter.Companion.printYellow
 import utility.FileHelper
 import java.io.File
+import kotlin.collections.get
 
 class CopyCatShell {
 
     fun getSrcAndTargetDirectoriesFromUser(config: CopyCatConfigurationBuilder) {
-        var srcDir = File("")
-        var compareDir = File("")
-        var promptForCompareDir = true
-        var userAnswer = Answer.NO
-        while (userAnswer == Answer.NO) {
-            srcDir = FileHelper.promptForValidDirectory("Enter the path to the source directory:")
-            while (promptForCompareDir) {
-                compareDir =
-                    FileHelper.promptForValidDirectory("Enter the path to the directory in which to search for duplicates:")
-                promptForCompareDir = false
-                if (compareDir == srcDir) {
-                    printRed("You cannot use the source directory here!")
-                    promptForCompareDir = true
+        val srcString = "source"
+        val srcDirs = mutableListOf<File>()
+
+        val compString = "compare"
+        val compareDirs = mutableListOf<File>()
+
+        collectDirs(srcString, srcDirs)
+        collectDirs(compString, compareDirs)
+
+        println("\nCounting all files...")
+        config.sourceDir = srcDirs
+        config.compareDir = compareDirs
+        val filesInSrcDir = config.sourceDir.sumOf { FileHelper.countFilesRecursively(it) }
+        val filesInCompareDir = config.compareDir.sumOf { FileHelper.countFilesRecursively(it) }
+        println("\t$filesInSrcDir file/s in source directory/ies")
+        println("\t$filesInCompareDir file/s to compare to")
+    }
+
+    private fun collectDirs(
+        dirTypeString: String,
+        dirList: MutableList<File>
+    ) {
+        var selectionIsCorrect = Answer.NO
+        while (selectionIsCorrect == Answer.NO) {
+
+            var addMoreDirs = Answer.YES
+            while (addMoreDirs == Answer.YES) {
+                val dirCandidate = FileHelper.promptForValidDirectory("Enter the path to the $dirTypeString directory:")
+                if (candidateIsNoDuplicate(dirList, dirCandidate)) {
+                    dirList.add(dirCandidate)
+                } else {
+                    printYellow("This directory is already in your list!")
                 }
+                addMoreDirs = FileHelper.askQuestionAndRequestAnswer("Do you want add another directory?")
             }
-            println("\n    Source directory: ${srcDir.absolutePath}")
-            println("Comparison directory: ${compareDir.absolutePath}")
 
-            // in case we reloop this part because user answered it is not correct
-            promptForCompareDir = true
+            printWhite(
+                "\n" +
+                        "Selected $dirTypeString directories:\n" +
+                        "----------------------------" +
+                        printDirs(dirList)
+            )
 
-            userAnswer = FileHelper.askQuestionAndRequestAnswer("Is this correct?")
-            if (userAnswer == Answer.QUIT) {
-                throw UserWantsToQuitProgramException()
+            selectionIsCorrect = FileHelper.askQuestionAndRequestAnswer("Is this correct?")
+
+            if (selectionIsCorrect == Answer.YES) {
+                break
+            }
+
+            if (FileHelper.askQuestionAndRequestAnswer("Do you want to remove item/s from this list?") == Answer.YES) {
+                val entriesToBeRemoved =
+                    FileHelper.askQuestionAndRequestIntegerList("What entry do you want to remove?\nWhen you want to enter multiple entries, separate them with an empty space: \"X Y\"")
+                removeEntriesFromList(entriesToBeRemoved, dirList)
+
+                printWhite(
+                    "\n" +
+                            "Selected $dirTypeString directories:\n" +
+                            "----------------------------" +
+                            printDirs(dirList)
+                )
+
+                selectionIsCorrect = FileHelper.askQuestionAndRequestAnswer("Is this correct?")
             }
         }
-        println("\nCounting all files...")
-        // TODO Fix this pseudo fixes
-        config.sourceDir = listOf(srcDir)
-        config.compareDir = listOf(compareDir)
-        val filesInSrcDir = FileHelper.countFilesRecursively(config.sourceDir[0])
-        val filesInCompareDir = FileHelper.countFilesRecursively(config.compareDir[0])
-        println("\t$filesInSrcDir file/s in \"${config.sourceDir[0].absolutePath}\"")
-        println("\t$filesInCompareDir file/s in \"${config.compareDir[0].absolutePath}\"")
+    }
+
+    private fun removeEntriesFromList(
+        entriesToBeRemoved: List<Int>,
+        entries: MutableList<File>
+    ) {
+        entriesToBeRemoved
+            .distinct()
+            .map { it - 1 }
+            .filter { it in entries.indices }
+            .sortedDescending()
+            .forEach { entries.removeAt(it) }
+    }
+
+    private fun candidateIsNoDuplicate(
+        dirs: List<File>,
+        dirCandidate: File
+    ): Boolean {
+        val candidatePath = dirCandidate.canonicalPath
+        return dirs.none { existing ->
+            val existingPath = existing.canonicalPath
+            candidatePath == existingPath || candidatePath.startsWith(existingPath + File.separator)
+        }
+    }
+
+    private fun printDirs(dirs: List<File>): String {
+        if (dirs.isEmpty()) {
+            return "\nno directories added\n"
+        } else {
+            var dirString = ""
+            var index = 1
+            for (dir in dirs) {
+                dirString += "\n\t$index)\t${dir.absolutePath}"
+                index++
+            }
+            return dirString
+        }
     }
 
     fun createUniqueFilesLists(config: CopyCatConfigurationBuilder) {
@@ -74,7 +142,7 @@ class CopyCatShell {
                     extractAndFilterStrings(trimmedLine, config.uniqueFiles.keys)
                 }
                 println("\nYour selection is: $selectedFileTypes")
-                userAnswer = FileHelper.askQuestionAndRequestAnswer("Is this selection correct?")
+                userAnswer = FileHelper.askQuestionAndRequestAnswer("\nIs this selection correct?")
             }
         }
         config.filesSelectedToBeCopied = collectFilesForKeys(selectedFileTypes, config.uniqueFiles)
@@ -109,7 +177,6 @@ class CopyCatShell {
     }
 
     fun showWelcome() {
-        printWhite("\n***************************************************")
         printYellow("\n\tWelcome to CopyCat!\n")
         println(
             "This little helper will copy all files from\n" +
@@ -117,7 +184,7 @@ class CopyCatShell {
                     "the files in a directory of your choosing!"
         )
         println("Let's get started, shall we?\n")
-        println("***************************************************")
+        println("********************************************")
     }
 
     fun letUserDecideOnLogFile(config: CopyCatConfigurationBuilder) {
