@@ -33,14 +33,13 @@ class FileHelper {
         fun askQuestionAndRequestAnswer(prompt: String): Answer {
             var userAnswer = Answer.UNDEFINED
             while (userAnswer == Answer.UNDEFINED) {
-                println("$prompt [Y/y or N/n or Q/q to exit]")
+                printGreen("\n$prompt [Y/y or N/n or Q/q to exit]")
                 userAnswer = getAnswer()
             }
             return userAnswer
         }
 
         private fun getAnswer(): Answer {
-            print("\t")
             val typedIn = readlnOrNull()
             if (typedIn != null) {
                 when (typedIn.lowercase()) {
@@ -74,7 +73,7 @@ class FileHelper {
         }
 
         private fun promptUser(message: String): String {
-            printGreen("$message ")
+            printGreen("\n$message ")
             return readlnOrNull()?.trim().orEmpty()
         }
 
@@ -115,7 +114,7 @@ class FileHelper {
         }
 
         fun printAllTypesOfUniqueFiles(uniqueFilesList: Map<String, List<File>>) {
-            println("\tFile types and their counts:")
+            println("File types and their counts:")
 
             // Split the map into: regular entries and the special "(no extension)"
             val (regularEntries, noExtEntry) = uniqueFilesList.entries.partition { it.key != NO_EXTENSION_KEY }
@@ -141,7 +140,7 @@ class FileHelper {
             // Print each line with aligned colon and updated suffix
             for ((fileType, files) in finalEntries) {
                 val paddedKey = fileType.padEnd(maxKeyLength)
-                println("\t\t$paddedKey: ${files.size} file/s")
+                println("\t$paddedKey: ${files.size} file/s")
             }
         }
 
