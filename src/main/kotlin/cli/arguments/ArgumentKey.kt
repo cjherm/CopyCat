@@ -1,6 +1,7 @@
 package cli.arguments
 
 enum class ArgumentKey(val key: String) {
+    HELP("help"),
     GUI("gui"),
     LOGF("logf"),
     LOGC("logc"),

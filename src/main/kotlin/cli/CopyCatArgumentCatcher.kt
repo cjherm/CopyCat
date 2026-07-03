@@ -10,6 +10,10 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
 
     private val argsList: List<Argument> = parseArgs()
 
+    fun requestsHelp(): Boolean{
+        return argsList.contains(NoValueArgument(ArgumentKey.HELP.key))
+    }
+
     fun requestsGui(): Boolean {
         val requestedGui = argsList.contains(NoValueArgument(ArgumentKey.GUI.key))
         if (requestedGui) {
