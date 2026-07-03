@@ -12,8 +12,9 @@ class CopyCatApplication {
     fun launch(config: CopyCatConfiguration) {
         printAndLogInfo("\nStarting copy process...", config)
         val files = config.filesSelectedToBeCopied
-        val sourceDir = config.sourceDir
-        val destDir = config.copyDestDir
+        // TODO Fix these pseudo fixes
+        val sourceDir = config.sourceDirs[0]
+        val destDir = config.copyDestDirs[0]
 
         if (!destDir.exists()) {
             destDir.mkdirs()

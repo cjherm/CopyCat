@@ -40,17 +40,19 @@ class CopyCatShell {
             }
         }
         println("\nCounting all files...")
-        config.sourceDir = srcDir
-        config.compareDir = compareDir
-        val filesInSrcDir = FileHelper.countFilesRecursively(config.sourceDir)
-        val filesInCompareDir = FileHelper.countFilesRecursively(config.compareDir)
-        println("\t$filesInSrcDir file/s in \"${config.sourceDir.absolutePath}\"")
-        println("\t$filesInCompareDir file/s in \"${config.compareDir.absolutePath}\"")
+        // TODO Fix this pseudo fixes
+        config.sourceDir = listOf(srcDir)
+        config.compareDir = listOf(compareDir)
+        val filesInSrcDir = FileHelper.countFilesRecursively(config.sourceDir[0])
+        val filesInCompareDir = FileHelper.countFilesRecursively(config.compareDir[0])
+        println("\t$filesInSrcDir file/s in \"${config.sourceDir[0].absolutePath}\"")
+        println("\t$filesInCompareDir file/s in \"${config.compareDir[0].absolutePath}\"")
     }
 
     fun createUniqueFilesLists(config: CopyCatConfigurationBuilder) {
         println("\nStart to searching for unique files in source directory...")
-        val uniqueFilesList = FileHelper.findMissingFilesGroupedByType(config.sourceDir, config.compareDir)
+        // TODO Fix this pseudo fix
+        val uniqueFilesList = FileHelper.findMissingFilesGroupedByType(config.sourceDir[0], config.compareDir[0])
         config.uniqueFiles = uniqueFilesList
         FileHelper.printAllTypesOfUniqueFiles(uniqueFilesList)
     }
@@ -94,11 +96,13 @@ class CopyCatShell {
     }
 
     fun letUserSelectTempDirectory(config: CopyCatConfigurationBuilder) {
+        // TODO Fix this pseudo fix
         config.useSeparateDestDir =
-            FileHelper.promptForBoolean("Do you want to use a separate destination directory?\nIf not, then CopyCat will use this one:\n${config.compareDir.absolutePath}")
+            FileHelper.promptForBoolean("Do you want to use a separate destination directory?\nIf not, then CopyCat will use this one:\n${config.compareDir[0].absolutePath}")
         if (config.useSeparateDestDir) {
+            // TODO Fix this pseudo fix
             config.copyDestDir =
-                FileHelper.promptForDirectory("Enter the path to the separate directory:")
+                listOf(FileHelper.promptForDirectory("Enter the path to the separate directory:"))
         } else {
             config.copyDestDir = config.compareDir
         }
