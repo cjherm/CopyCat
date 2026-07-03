@@ -4,12 +4,13 @@ import config.CopyCatConfiguration
 import utility.ConsolePrinter.Companion.printRed
 import utility.ConsolePrinter.Companion.printWhite
 import utility.ConsolePrinter.Companion.printYellow
+import utility.Logger
 import java.io.File
 import java.io.IOException
 
 class CopyCatApplication {
     fun launch(config: CopyCatConfiguration) {
-        printWhite("Starting copy process...")
+        printAndLogInfo("\nStarting copy process...", config)
         val files = config.filesSelectedToBeCopied
         val sourceDir = config.sourceDir
         val destDir = config.copyDestDir
@@ -20,7 +21,7 @@ class CopyCatApplication {
 
         val totalFiles = files.size
         if (totalFiles == 0) {
-            printYellow("No files to copy.")
+            printAndLogWarn("No files to copy.", config)
             return
         }
 
@@ -54,21 +55,48 @@ class CopyCatApplication {
                 if ((totalFiles <= 10 && copiedCount == totalFiles) ||
                     (totalFiles > 10 && copiedCount % logStep == 0)
                 ) {
-                    printWhite("Copied $copiedCount / $totalFiles files...")
+                    printAndLogInfo("Copied $copiedCount / $totalFiles files...", config)
                 }
 
             } catch (e: IOException) {
-                printRed("Failed to copy ${file.name}: ${e.message}")
+                printAndLogError("Failed to copy ${file.name}: ${e.message}", config)
                 failedCount++
             } catch (e: IllegalArgumentException) {
-                printRed("Path error for ${file.absolutePath}: ${e.message}")
+                printAndLogError("Path error for ${file.absolutePath}: ${e.message}", config)
                 failedCount++
             }
         }
 
-        printWhite("Finished copying.")
-        printWhite("Copied files: $copiedCount")
-        printWhite("Skipped files (already existed): $skippedCount")
-        printWhite("Failed to copy due to error: $failedCount")
+        printAndLogInfo("Finished copying.", config)
+        printAndLogInfo("\n                 Copied files: $copiedCount", config)
+        printAndLogInfo("Skipped files (already existed): $skippedCount", config)
+        printAndLogInfo("    Failed to copy due to error: $failedCount\n", config)
+    }
+
+    fun printAndLogInfo(msg: String, cfg: CopyCatConfiguration) {
+        if (cfg.printToConsole) {
+            printWhite(msg)
+        }
+        if (cfg.printToFile) {
+            Logger.info(msg)
+        }
+    }
+
+    fun printAndLogWarn(msg: String, cfg: CopyCatConfiguration) {
+        if (cfg.printToConsole) {
+            printYellow(msg)
+        }
+        if (cfg.printToFile) {
+            Logger.warn(msg)
+        }
+    }
+
+    fun printAndLogError(msg: String, cfg: CopyCatConfiguration) {
+        if (cfg.printToConsole) {
+            printRed(msg)
+        }
+        if (cfg.printToFile) {
+            Logger.error(msg)
+        }
     }
 }
