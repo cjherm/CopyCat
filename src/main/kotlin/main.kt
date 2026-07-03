@@ -17,21 +17,20 @@ fun main(args: Array<String>) {
         return
     }
 
-    val argCatcher = CopyCatArgumentCatcher(args)
-    val config = argCatcher.getConfig()
-
-    if (argCatcher.requestsGui()) {
-        // Like CopyCatShell but with a GUI
+    // TODO Add option to use GUI and some preset config settings
+    val caughtArgs = CopyCatArgumentCatcher(args)
+    if (caughtArgs.requestsGui()) {
         startGui()
         return
     }
 
+    val config = caughtArgs.getConfig()
     if (config != null) {
-        // When all arguments are provided and no GUI requests, we will launch CopyCat directly without a Shell nor GUI
         startImmediateExecution(config)
-    } else {
-        printRed("Missing or invalid arguments for immediate execution! Please add at least \"-src PATH -dest PATH\" as minimum!")
+        return
     }
+
+    printRed("Missing or invalid arguments for immediate execution! Please add at least \"-src PATH -dest PATH\" as minimum!")
 }
 
 private fun startShell() {
