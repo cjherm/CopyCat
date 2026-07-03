@@ -3,13 +3,11 @@ package cli
 import config.CopyCatConfigurationBuilder
 import utility.Answer
 import utility.ConsolePrinter.Companion.printGreen
-import utility.UserWantsToQuitProgramException
-import utility.ConsolePrinter.Companion.printRed
 import utility.ConsolePrinter.Companion.printWhite
 import utility.ConsolePrinter.Companion.printYellow
 import utility.FileHelper
+import utility.UserWantsToQuitProgramException
 import java.io.File
-import kotlin.collections.get
 
 class CopyCatShell {
 
@@ -28,8 +26,8 @@ class CopyCatShell {
         config.compareDir = compareDirs
         val filesInSrcDir = config.sourceDir.sumOf { FileHelper.countFilesRecursively(it) }
         val filesInCompareDir = config.compareDir.sumOf { FileHelper.countFilesRecursively(it) }
-        println("\t$filesInSrcDir file/s in source directory/ies")
-        println("\t$filesInCompareDir file/s to compare to")
+        println("\t$filesInSrcDir files in ${srcDirs.size} source directories")
+        println("\t$filesInCompareDir files to compare to ${compareDirs.size} directories")
     }
 
     private fun collectDirs(
@@ -118,7 +116,7 @@ class CopyCatShell {
     }
 
     fun createUniqueFilesLists(config: CopyCatConfigurationBuilder) {
-        println("\nStart to searching for unique files in source directory...")
+        println("\nStart to searching for unique files in source directory...\n")
         // TODO Fix this pseudo fix
         val uniqueFilesList = FileHelper.findMissingFilesGroupedByType(config.sourceDir[0], config.compareDir[0])
         config.uniqueFiles = uniqueFilesList
