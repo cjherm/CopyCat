@@ -57,7 +57,7 @@ private fun startUserInteraction(ccShell: CopyCatShell) {
         val config = cfgBuilder.build()
         ccApp.launch(config)
     } catch (_: UserWantsToQuitProgramException) {
-        printWhite("User is quitting the program...")
+        printWhite("\nUser is quitting CopyCat...")
         return
     } catch (_: RestartProgramException) {
         startUserInteraction(ccShell)
