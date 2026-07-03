@@ -128,8 +128,11 @@ class CopyCatShell {
 
     fun createUniqueFilesLists(config: CopyCatConfigurationBuilder) {
         printWhite("\nStart to searching for unique files in source directory...\n")
-        // TODO Fix this pseudo fix
-        val uniqueFilesList = FileHelper.findMissingFilesGroupedByType(config.sourceDir[0], config.compareDir[0])
+        val uniqueFilesList = config.sourceDir
+            .flatMap { srcDir -> config.compareDir.map { compareDir -> FileHelper.findMissingFilesGroupedByType(srcDir, compareDir) } }
+            .flatMap { it.entries }
+            .groupBy({ it.key }, { it.value })
+            .mapValues { (_, lists) -> lists.flatten().distinctBy { Triple(it.name, it.extension.lowercase(), it.length()) } }
         config.uniqueFiles = uniqueFilesList
         FileHelper.printAllTypesOfUniqueFiles(uniqueFilesList)
     }
