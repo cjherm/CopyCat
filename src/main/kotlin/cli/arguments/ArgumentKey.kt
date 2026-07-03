@@ -8,7 +8,8 @@ enum class ArgumentKey(val key: String) {
     SRC("src"),
     DEST("dest"),
     COMP("comp"),
-    TYPES("types");
+    TYPES_INCL("incl"),
+    TYPES_EXCL("excl");
 
     companion object {
         fun fromString(key: String): ArgumentKey? = entries.find { it.key == key }
