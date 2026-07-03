@@ -36,7 +36,7 @@ class CopyCatShell {
         listToCheckAgainst: List<File>?
     ) {
         var selectionIsCorrect = Answer.NO
-        while (selectionIsCorrect == Answer.NO) {
+        while (selectionIsCorrect == Answer.NO || dirList.isEmpty()) {
 
             var addMoreDirs = Answer.YES
             while (addMoreDirs == Answer.YES) {
