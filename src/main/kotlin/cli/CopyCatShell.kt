@@ -18,8 +18,8 @@ class CopyCatShell {
         val compString = "compare"
         val compareDirs = mutableListOf<File>()
 
-        collectDirs(srcString, srcDirs)
-        collectDirs(compString, compareDirs)
+        collectDirs(srcString, srcDirs, null)
+        collectDirs(compString, compareDirs, srcDirs)
 
         printWhite("\nCounting all files...")
         config.sourceDir = srcDirs
@@ -32,7 +32,8 @@ class CopyCatShell {
 
     private fun collectDirs(
         dirTypeString: String,
-        dirList: MutableList<File>
+        dirList: MutableList<File>,
+        listToCheckAgainst: List<File>?
     ) {
         var selectionIsCorrect = Answer.NO
         while (selectionIsCorrect == Answer.NO) {
@@ -40,10 +41,12 @@ class CopyCatShell {
             var addMoreDirs = Answer.YES
             while (addMoreDirs == Answer.YES) {
                 val dirCandidate = FileHelper.promptForValidDirectory("Enter the path to the $dirTypeString directory:")
-                if (candidateIsNoDuplicate(dirList, dirCandidate)) {
-                    dirList.add(dirCandidate)
+                if (!candidateIsNoDuplicate(dirList, dirCandidate)) {
+                    // yellow message already printed inside candidateIsNoDuplicate
+                } else if (listToCheckAgainst != null && !candidateIsNoDuplicate(listToCheckAgainst, dirCandidate)) {
+                    // yellow message already printed inside candidateIsNoDuplicate
                 } else {
-                    printYellow("This directory is already in your list!")
+                    dirList.add(dirCandidate)
                 }
                 addMoreDirs = FileHelper.askQuestionAndRequestAnswer("Do you want add another directory?")
             }
@@ -95,10 +98,18 @@ class CopyCatShell {
         dirCandidate: File
     ): Boolean {
         val candidatePath = dirCandidate.canonicalPath
-        return dirs.none { existing ->
+        val conflict = dirs.firstOrNull { existing ->
             val existingPath = existing.canonicalPath
             candidatePath == existingPath || candidatePath.startsWith(existingPath + File.separator)
         }
+        if (conflict != null) {
+            if (conflict.canonicalPath == candidatePath) {
+                printYellow("\"${dirCandidate.absolutePath}\" is already in the list.")
+            } else {
+                printYellow("\"${dirCandidate.absolutePath}\" is a sub-directory of \"${conflict.absolutePath}\", which is already in the list.")
+            }
+        }
+        return conflict == null
     }
 
     private fun printDirs(dirs: List<File>): String {
