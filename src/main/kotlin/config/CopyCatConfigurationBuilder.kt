@@ -9,12 +9,16 @@ class CopyCatConfigurationBuilder {
     var copyDestDir = File("")
     var filesSelectedToBeCopied = listOf<File>()
     var useSeparateDestDir = true
+    var printToConsole = false
+    var printToFile = false
 
     fun build(): CopyCatConfiguration {
         return CopyCatConfiguration(
             sourceDir,
             copyDestDir,
             filesSelectedToBeCopied,
+            printToConsole,
+            printToFile
         )
     }
 }

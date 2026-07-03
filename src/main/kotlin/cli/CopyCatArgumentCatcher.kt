@@ -129,7 +129,9 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
         return CopyCatConfiguration(
             sourceDir = srcDir,
             copyDestDir = destDir,
-            filesSelectedToBeCopied = filesSelectedToBeCopied
+            filesSelectedToBeCopied = filesSelectedToBeCopied,
+            printToConsole = false,
+            printToFile = false
         )
     }
 
