@@ -61,7 +61,7 @@ class CopyCatShell {
         var userAnswer = Answer.UNDEFINED
         var selectedFileTypes = listOf<String>()
         while (userAnswer != Answer.YES) {
-            printGreen("\nPlease select what file types should be copied like this: jpg png or $ for all or Q/q to quit")
+            printGreen("\nPlease select what file types should be copied like this: jpg png or $ for all or Q to quit")
             val enteredLine = readlnOrNull()
             if (enteredLine != null) {
                 val trimmedLine = enteredLine.trim()

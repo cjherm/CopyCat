@@ -33,7 +33,7 @@ class FileHelper {
         fun askQuestionAndRequestAnswer(prompt: String): Answer {
             var userAnswer = Answer.UNDEFINED
             while (userAnswer == Answer.UNDEFINED) {
-                printGreen("\n$prompt [Y/y or N/n or Q/q to exit]")
+                printGreen("\n$prompt [Y or N or Q to exit]")
                 userAnswer = getAnswer()
             }
             return userAnswer
@@ -56,7 +56,7 @@ class FileHelper {
         private fun askToUseParentDirectory(file: File): Boolean {
             val parent = file.parent ?: return false
             printYellow("That path is a file.")
-            val message = "Do you want to use the containing directory ($parent) instead? [y/Y or n/N]: "
+            val message = "Do you want to use the containing directory ($parent) instead? [Y or N]: "
             val answer = promptUser(message)
             return answer.equals("y", ignoreCase = true)
         }
@@ -84,7 +84,7 @@ class FileHelper {
 
                 when {
                     !dir.exists() -> {
-                        printGreen("Directory does not exist. Create it? [Y/y or N/n]: ")
+                        printGreen("Directory does not exist. Create it? [Y or N]: ")
                         if (readlnOrNull()?.trim().equals("y", ignoreCase = true)) {
                             if (dir.mkdirs()) {
                                 println("Directory created.")
@@ -100,7 +100,7 @@ class FileHelper {
                     }
 
                     dir.listFiles()?.isNotEmpty() == true -> {
-                        printYellow("Directory is not empty. Use it anyway? [Y/y or N/n]: ")
+                        printYellow("Directory is not empty. Use it anyway? [Y or N]: ")
                         if (readlnOrNull()?.trim().equals("y", ignoreCase = true)) {
                             return dir
                         }
