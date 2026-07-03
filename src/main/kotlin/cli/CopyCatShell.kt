@@ -2,6 +2,7 @@ package cli
 
 import config.CopyCatConfigurationBuilder
 import utility.Answer
+import utility.ConsolePrinter.Companion.printGreen
 import utility.UserWantsToQuitProgramException
 import utility.ConsolePrinter.Companion.printRed
 import utility.ConsolePrinter.Companion.printWhite
@@ -23,12 +24,12 @@ class CopyCatShell {
                     FileHelper.promptForValidDirectory("Enter the path to the directory in which to search for duplicates:")
                 promptForCompareDir = false
                 if (compareDir == srcDir) {
-                    printRed("\tYou cannot use the source directory here!")
+                    printRed("You cannot use the source directory here!")
                     promptForCompareDir = true
                 }
             }
-            println("\t    Source directory: ${srcDir.absolutePath}")
-            println("\tComparison directory: ${compareDir.absolutePath}")
+            println("\n    Source directory: ${srcDir.absolutePath}")
+            println("Comparison directory: ${compareDir.absolutePath}")
 
             // in case we reloop this part because user answered it is not correct
             promptForCompareDir = true
@@ -38,7 +39,7 @@ class CopyCatShell {
                 throw UserWantsToQuitProgramException()
             }
         }
-        println("Counting all files...")
+        println("\nCounting all files...")
         config.sourceDir = srcDir
         config.compareDir = compareDir
         val filesInSrcDir = FileHelper.countFilesRecursively(config.sourceDir)
@@ -48,7 +49,7 @@ class CopyCatShell {
     }
 
     fun createUniqueFilesLists(config: CopyCatConfigurationBuilder) {
-        println("Start to searching for unique files in source directory...")
+        println("\nStart to searching for unique files in source directory...")
         val uniqueFilesList = FileHelper.findMissingFilesGroupedByType(config.sourceDir, config.compareDir)
         config.uniqueFiles = uniqueFilesList
         FileHelper.printAllTypesOfUniqueFiles(uniqueFilesList)
@@ -58,7 +59,7 @@ class CopyCatShell {
         var userAnswer = Answer.UNDEFINED
         var selectedFileTypes = listOf<String>()
         while (userAnswer != Answer.YES) {
-            println("Please select what file types should be copied like this: jpg png or $ for all or Q/q to quit")
+            printGreen("\nPlease select what file types should be copied like this: jpg png or $ for all or Q/q to quit")
             val enteredLine = readlnOrNull()
             if (enteredLine != null) {
                 val trimmedLine = enteredLine.trim()
@@ -70,7 +71,7 @@ class CopyCatShell {
                 } else {
                     extractAndFilterStrings(trimmedLine, config.uniqueFiles.keys)
                 }
-                println("Your selection is: $selectedFileTypes")
+                println("\nYour selection is: $selectedFileTypes")
                 userAnswer = FileHelper.askQuestionAndRequestAnswer("Is this selection correct?")
             }
         }
@@ -94,7 +95,7 @@ class CopyCatShell {
 
     fun letUserSelectTempDirectory(config: CopyCatConfigurationBuilder) {
         config.useSeparateDestDir =
-            FileHelper.promptForBoolean("Do you want to use a separate destination directory? If not, then CopyCat will use this one?: ${config.compareDir.absolutePath}")
+            FileHelper.promptForBoolean("Do you want to use a separate destination directory?\nIf not, then CopyCat will use this one:\n${config.compareDir.absolutePath}")
         if (config.useSeparateDestDir) {
             config.copyDestDir =
                 FileHelper.promptForDirectory("Enter the path to the separate directory:")
@@ -113,5 +114,10 @@ class CopyCatShell {
         )
         println("Let's get started, shall we?\n")
         println("***************************************************")
+    }
+
+    fun letUserDecideOnLogFile(config: CopyCatConfigurationBuilder) {
+        config.printToFile =
+            FileHelper.promptForBoolean("Do you want to create a log file in the destination directory?")
     }
 }
