@@ -10,10 +10,6 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
 
     private val argsList: List<Argument> = parseArgs()
 
-    fun requestsHelp(): Boolean {
-        return argsList.contains(Flag(ArgumentKey.HELP.key))
-    }
-
     fun requestsGui(): Boolean {
         val requestedGui = argsList.contains(Flag(ArgumentKey.GUI.key))
         if (requestedGui) {
@@ -203,6 +199,12 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
 
                 listElem?.let { add(it) }
             }
+        }
+    }
+
+    companion object {
+        fun containsHelpArg(args: Array<String>): Boolean {
+            return args.contains("-${ArgumentKey.HELP.key}")
         }
     }
 }
