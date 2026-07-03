@@ -21,13 +21,13 @@ class CopyCatShell {
         collectDirs(srcString, srcDirs)
         collectDirs(compString, compareDirs)
 
-        println("\nCounting all files...")
+        printWhite("\nCounting all files...")
         config.sourceDir = srcDirs
         config.compareDir = compareDirs
         val filesInSrcDir = config.sourceDir.sumOf { FileHelper.countFilesRecursively(it) }
         val filesInCompareDir = config.compareDir.sumOf { FileHelper.countFilesRecursively(it) }
-        println("\t$filesInSrcDir files in ${srcDirs.size} source directories")
-        println("\t$filesInCompareDir files to compare to ${compareDirs.size} directories")
+        printWhite("\t$filesInSrcDir files in ${srcDirs.size} source directories")
+        printWhite("\t$filesInCompareDir files to compare to ${compareDirs.size} directories")
     }
 
     private fun collectDirs(
@@ -116,7 +116,7 @@ class CopyCatShell {
     }
 
     fun createUniqueFilesLists(config: CopyCatConfigurationBuilder) {
-        println("\nStart to searching for unique files in source directory...\n")
+        printWhite("\nStart to searching for unique files in source directory...\n")
         // TODO Fix this pseudo fix
         val uniqueFilesList = FileHelper.findMissingFilesGroupedByType(config.sourceDir[0], config.compareDir[0])
         config.uniqueFiles = uniqueFilesList
@@ -139,7 +139,7 @@ class CopyCatShell {
                 } else {
                     extractAndFilterStrings(trimmedLine, config.uniqueFiles.keys)
                 }
-                println("\nYour selection is: $selectedFileTypes")
+                printWhite("\nYour selection is: $selectedFileTypes")
                 userAnswer = FileHelper.askQuestionAndRequestAnswer("\nIs this selection correct?")
             }
         }
@@ -176,13 +176,13 @@ class CopyCatShell {
 
     fun showWelcome() {
         printYellow("\n\tWelcome to CopyCat!\n")
-        println(
+        printWhite(
             "This little helper will copy all files from\n" +
                     "a source directory which are new compared to\n" +
                     "the files in a directory of your choosing!"
         )
-        println("Let's get started, shall we?\n")
-        println("********************************************")
+        printWhite("Let's get started, shall we?\n")
+        printWhite("********************************************")
     }
 
     fun letUserDecideOnLogFile(config: CopyCatConfigurationBuilder) {
