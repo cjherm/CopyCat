@@ -34,7 +34,7 @@ class FileHelper {
         fun askQuestionAndRequestAnswer(prompt: String): Answer {
             var userAnswer = Answer.UNDEFINED
             while (userAnswer == Answer.UNDEFINED) {
-                printGreen("\n$prompt [Y or N or Q to exit]")
+                printGreen("\n$prompt [Y/N or Q to exit]")
                 userAnswer = getAnswer()
             }
             return userAnswer
@@ -46,7 +46,7 @@ class FileHelper {
                 when (typedIn.lowercase()) {
                     "y" -> return Answer.YES
                     "n" -> return Answer.NO
-                    "q" -> return Answer.QUIT
+                    "q" -> throw UserWantsToQuitProgramException()
                 }
             }
             return Answer.UNDEFINED
@@ -57,7 +57,7 @@ class FileHelper {
         private fun askToUseParentDirectory(file: File): Boolean {
             val parent = file.parent ?: return false
             printYellow("That path is a file.")
-            val message = "Do you want to use the containing directory ($parent) instead? [Y or N or Q to exit]: "
+            val message = "Do you want to use the containing directory ($parent) instead? [Y/N or Q to exit]: "
             val answer = promptUser(message)
             if (answer.lowercase() == "q") throw UserWantsToQuitProgramException()
             return answer.equals("y", ignoreCase = true)
@@ -87,7 +87,7 @@ class FileHelper {
 
                 when {
                     !dir.exists() -> {
-                        printGreen("Directory does not exist. Create it? [Y or N or Q to exit]: ")
+                        printGreen("Directory does not exist. Create it? [Y/N or Q to exit]: ")
                         val createAnswer = readlnOrNull()?.trim().orEmpty()
                         if (createAnswer.lowercase() == "q") throw UserWantsToQuitProgramException()
                         if (createAnswer.equals("y", ignoreCase = true)) {
@@ -105,7 +105,7 @@ class FileHelper {
                     }
 
                     dir.listFiles()?.isNotEmpty() == true -> {
-                        printYellow("Directory is not empty. Use it anyway? [Y or N or Q to exit]: ")
+                        printYellow("Directory is not empty. Use it anyway? [Y/N or Q to exit]: ")
                         val useAnswer = readlnOrNull()?.trim().orEmpty()
                         if (useAnswer.lowercase() == "q") throw UserWantsToQuitProgramException()
                         if (useAnswer.equals("y", ignoreCase = true)) {
