@@ -10,99 +10,116 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
 
     private val argsList: List<Argument> = parseArgs()
 
-    fun requestsHelp(): Boolean{
-        return argsList.contains(NoValueArgument(ArgumentKey.HELP.key))
+    fun requestsHelp(): Boolean {
+        return argsList.contains(Flag(ArgumentKey.HELP.key))
     }
 
     fun requestsGui(): Boolean {
-        val requestedGui = argsList.contains(NoValueArgument(ArgumentKey.GUI.key))
+        val requestedGui = argsList.contains(Flag(ArgumentKey.GUI.key))
         if (requestedGui) {
             Logger.info("Requested GUI")
         }
         return requestedGui
     }
 
-    fun retrieveSrcDirFromArg(): File? {
-        val argValue = argsList.singleValueOf(ArgumentKey.SRC) ?: ""
-        if (argValue.isEmpty()) {
-            Logger.error("Missing path for source directory! Please add via \"-src PATH\"!")
-            return null
-        }
+    fun retrieveSrcDirsFromArg(): List<File> {
+        val argValues = argsList.allValuesOf(ArgumentKey.SRC)
+        if (argValues.isEmpty()) return emptyList()
 
-        val srcDir = File(argValue)
-        if (!srcDir.isValidDirectory()) {
-            Logger.error("Source directory is invalid or does not exist: ${srcDir.absolutePath}")
-            return null
-        }
+        return argValues.mapNotNull { argValue ->
+            val srcDir = File(argValue)
+            when {
+                !srcDir.isValidDirectory() -> {
+                    Logger.error("Source directory is invalid or does not exist: ${srcDir.absolutePath}")
+                    null
+                }
 
-        srcDir.listFiles()?.size?.let {
-            if (it <= 0) {
-                Logger.error("Source directory is empty!")
-                return null
+                (srcDir.listFiles()?.size ?: 0) <= 0 -> {
+                    Logger.error("Source directory is empty: ${srcDir.absolutePath}")
+                    null
+                }
+
+                else -> {
+                    Logger.info("Set source directory: ${srcDir.absolutePath}")
+                    srcDir
+                }
             }
         }
-
-        Logger.info("Set source directory: ${srcDir.absolutePath}")
-        return srcDir
     }
 
-    fun retrieveDestDirFromArg(srcDir: File?): File? {
-        val argValue = argsList.singleValueOf(ArgumentKey.DEST) ?: ""
-        if (argValue.isEmpty()) {
-            Logger.error("Missing path for source directory! Please add via \"-dest PATH\"!")
-            return null
-        }
+    fun retrieveDestDirsFromArg(srcDirs: List<File>): List<File> {
+        val argValues = argsList.allValuesOf(ArgumentKey.DEST)
+        if (argValues.isEmpty()) return emptyList()
 
-        val destDir = File(argValue)
-        if (!destDir.isValidDirectory()) {
-            Logger.warn("Destination directory is invalid or does not exist and must be created: ${destDir.absolutePath}")
-            return null
-        }
+        return argValues.mapNotNull { argValue ->
+            val destDir = File(argValue)
+            when {
+                srcDirs.contains(destDir) -> {
+                    Logger.error("Destination directory cannot be the same as a source directory: ${destDir.absolutePath}")
+                    null
+                }
 
-        if (destDir == srcDir) {
-            Logger.error("Destination directory cannot be the same as the source directory!")
-            return null
-        }
+                !destDir.isValidDirectory() -> {
+                    Logger.info("Destination directory does not exist and must be created: ${destDir.absolutePath}")
+                    destDir.mkdirs()
+                    if (!destDir.isValidDirectory()) {
+                        Logger.error("Destination directory could not be created: ${destDir.absolutePath}")
+                        null
+                    } else {
+                        Logger.info("Destination directory created: ${destDir.absolutePath}")
+                        destDir
+                    }
+                }
 
-        if (srcDir != null && !destDir.isValidDirectory()) {
-            destDir.mkdirs()
-            if (!destDir.isValidDirectory()) {
-                Logger.error("Destination directory could not be created: ${destDir.absolutePath}")
-                return null
+                else -> {
+                    Logger.info("Set destination directory: ${destDir.absolutePath}")
+                    destDir
+                }
             }
-            Logger.info("Destination directory created.")
         }
-
-        Logger.info("Set destination directory: ${destDir.absolutePath}")
-        return destDir
     }
 
-    fun retrieveCompDirFromArg(srcDir: File?): File? {
-        val argValue = argsList.singleValueOf(ArgumentKey.COMP) ?: ""
-        if (argValue.isEmpty()) {
-            return null
-        }
+    fun retrieveCompDirsFromArg(srcDirs: List<File>): List<File>? {
+        val argValues = argsList.allValuesOf(ArgumentKey.COMP)
+        if (argValues.isEmpty()) return null
 
-        val compDir = File(argValue)
-        if (!compDir.isValidDirectory()) {
-            Logger.error("Diff directory is invalid or does not exist: ${compDir.absolutePath}")
-            return null
-        }
-        if (compDir == srcDir) {
-            Logger.error("Diff directory cannot be the same as the source directory!")
-            return null
-        }
+        return argValues.mapNotNull { argValue ->
+            val compDir = File(argValue)
+            when {
+                !compDir.isValidDirectory() -> {
+                    Logger.error("Diff directory is invalid or does not exist: ${compDir.absolutePath}")
+                    null
+                }
 
-        Logger.info("Set diff directory: ${compDir.absolutePath}")
-        return compDir
+                srcDirs.contains(compDir) -> {
+                    Logger.error("Diff directory cannot be the same as a source directory: ${compDir.absolutePath}")
+                    null
+                }
+
+                else -> {
+                    Logger.info("Set diff directory: ${compDir.absolutePath}")
+                    compDir
+                }
+            }
+        }
     }
 
-    private fun retrieveTypesFromArg(): List<String> {
-        val types = argsList.multiValuesOf(ArgumentKey.TYPES)
+    private fun retrieveInclTypesFromArg(): List<String> {
+        val types = argsList.allValuesOf(ArgumentKey.TYPES_INCL)
         if (types.isEmpty()) {
-            Logger.info("No file type filter set, will consider all files in source directory!")
+            Logger.info("No include type filter set, will consider all files in source directory!")
         } else {
-            Logger.info("Types selected: ${types.toList()}")
+            Logger.info("Include types selected: $types")
+        }
+        return types
+    }
+
+    private fun retrieveExclTypesFromArg(): List<String> {
+        val types = argsList.allValuesOf(ArgumentKey.TYPES_EXCL)
+        if (types.isEmpty()) {
+            Logger.info("No exclude type filter set.")
+        } else {
+            Logger.info("Exclude types selected: $types")
         }
         return types
     }
@@ -110,37 +127,46 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
     private fun retrieveLogSettingsFromArg() {
         val logFilePath = argsList.singleValueOf(ArgumentKey.LOGF)
         if (logFilePath != null) Logger.logFile = File(logFilePath)
-        if (argsList.contains(NoValueArgument(ArgumentKey.LOGC.key))) Logger.printToConsole = true
+        if (argsList.contains(Flag(ArgumentKey.LOGC.key))) Logger.printToConsole = true
     }
 
     fun getConfig(): CopyCatConfiguration? {
         retrieveLogSettingsFromArg()
-        val srcDir = retrieveSrcDirFromArg()
-        val compDirTemp = retrieveCompDirFromArg(srcDir)
-        val destDir = retrieveDestDirFromArg(srcDir)
-        val types = retrieveTypesFromArg()
+        val srcDirs = retrieveSrcDirsFromArg()
+        val destDirs = retrieveDestDirsFromArg(srcDirs)
+        val compDirsTemp = retrieveCompDirsFromArg(srcDirs)
+        val inclTypes = retrieveInclTypesFromArg()
+        val exclTypes = retrieveExclTypesFromArg()
 
-        if (srcDir == null || destDir == null) {
+        if (srcDirs.isEmpty() || destDirs.isEmpty()) {
             return null
         }
 
-        val compDir = compDirTemp ?: destDir
+        // no separate directory/ies set for comparison, so will compare to destination directory/ies
+        val compDirs = compDirsTemp?: destDirs
+
+        if(compDirs.isEmpty()){
+            // the argument "-comp" was used at least once without a valid path, so we have a problem
+            return null
+        }
 
         // TODO 1 this does not seem to work properly, it still seems to include files from different types then requested
         // TODO 3 make sure we only include unique files
-        val filesSelectedToBeCopied = calculateFilesToCopy(srcDir, compDir, types)
+        // TODO what do we do when the destination dir/s already have a file as we do not compare them when using -comp
+        val filesSelectedToBeCopied = calculateFilesToCopy(srcDirs, compDirs, inclTypes, exclTypes)
 
         return CopyCatConfiguration(
-            sourceDir = srcDir,
-            copyDestDir = destDir,
+            sourceDirs = srcDirs,
+            copyDestDirs = destDirs,
             filesSelectedToBeCopied = filesSelectedToBeCopied,
             printToConsole = false,
             printToFile = false
         )
     }
-
-    private fun calculateFilesToCopy(srcDir: File, compDir: File, types: List<String>): List<File> {
-        val uniqueFiles = FileHelper.findMissingFilesGroupedByType(srcDir, compDir)
+    // TODO Fix this temporary pseudo fix
+    private fun calculateFilesToCopy(srcDir: List<File>, compDir: List<File>, types: List<String>, types2: List<String>): List<File> {
+        // TODO Fix this temporary pseudo fix
+        val uniqueFiles = FileHelper.findMissingFilesGroupedByType(srcDir[0], compDir[1])
         return if (types.isEmpty()) {
             uniqueFiles.values.flatten()
         } else {
@@ -153,8 +179,8 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
     private fun List<Argument>.singleValueOf(key: ArgumentKey): String? =
         filterIsInstance<SingleValueArgument>().find { it.key == key.key }?.value
 
-    private fun List<Argument>.multiValuesOf(key: ArgumentKey): List<String> =
-        filterIsInstance<MultiValueArgument>().find { it.key == key.key }?.values ?: emptyList()
+    private fun List<Argument>.allValuesOf(key: ArgumentKey): List<String> =
+        filterIsInstance<SingleValueArgument>().filter { it.key == key.key }.map { it.value }
 
     private fun parseArgs(): List<Argument> {
         val queue = ArrayDeque(args.toList())
@@ -163,26 +189,20 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
                 val arg = queue.removeFirst()
                 if (!arg.startsWith("-")) continue
                 val argumentKey = ArgumentKey.fromString(arg.removePrefix("-")) ?: continue
-                add(
+                val listElem =
                     when (argumentKey) {
-                        ArgumentKey.SRC, ArgumentKey.DEST, ArgumentKey.COMP, ArgumentKey.LOGF ->
+                        ArgumentKey.SRC, ArgumentKey.DEST, ArgumentKey.COMP, ArgumentKey.LOGF,
+                        ArgumentKey.TYPES_INCL, ArgumentKey.TYPES_EXCL ->
                             SingleValueArgument(argumentKey.key, queue.removeFirstOrNull() ?: "")
 
-                        ArgumentKey.TYPES ->
-                            MultiValueArgument(argumentKey.key, drainWhile(queue) { !it.startsWith("-") })
-
                         ArgumentKey.GUI, ArgumentKey.LOGC ->
-                            NoValueArgument(argumentKey.key)
+                            Flag(argumentKey.key)
+
+                        ArgumentKey.HELP -> null
                     }
-                )
+
+                listElem?.let { add(it) }
             }
         }
     }
-
-    private fun drainWhile(queue: ArrayDeque<String>, predicate: (String) -> Boolean): List<String> =
-        buildList {
-            while (queue.isNotEmpty() && predicate(queue.first())) {
-                add(queue.removeFirst())
-            }
-        }
 }
