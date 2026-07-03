@@ -38,7 +38,6 @@ fun main(args: Array<String>) {
     printRed("Missing or invalid arguments for immediate execution! Please add at least \"-src PATH -dest PATH\" as minimum!")
 }
 
-// TODO Q/q quits program at any time
 private fun startShell() {
     val ccShell = CopyCatShell()
     ccShell.showWelcome()
