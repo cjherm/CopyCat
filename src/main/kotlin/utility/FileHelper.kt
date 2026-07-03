@@ -192,5 +192,24 @@ class FileHelper {
                 }
             }
         }
+
+        fun askQuestionAndRequestIntegerList(prompt: String): List<Int> {
+            var userAnswer = mutableListOf<Int>()
+            while (userAnswer.isEmpty()) {
+                printGreen("\n$prompt [Q to exit]")
+                userAnswer = getIntegerList()
+            }
+            return userAnswer
+        }
+
+        private fun getIntegerList(): MutableList<Int> {
+            val input = readlnOrNull()?.trim().orEmpty()
+            if (input.lowercase() == "q") throw UserWantsToQuitProgramException()
+            return input
+                .split("\\s+".toRegex())
+                .filter { it.isNotBlank() }
+                .mapNotNull { it.toIntOrNull() }
+                .toMutableList()
+        }
     }
 }
