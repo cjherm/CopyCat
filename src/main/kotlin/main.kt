@@ -44,10 +44,12 @@ private fun startUserInteraction(ccShell: CopyCatShell) {
     val ccApp = CopyCatApplication()
     try {
         val cfgBuilder = CopyCatConfigurationBuilder()
+        cfgBuilder.printToConsole = true
         ccShell.getSrcAndTargetDirectoriesFromUser(cfgBuilder)
         ccShell.createUniqueFilesLists(cfgBuilder)
         ccShell.letUserSelectFileTypesToBeCopied(cfgBuilder)
         ccShell.letUserSelectTempDirectory(cfgBuilder)
+        ccShell.letUserDecideOnLogFile(cfgBuilder)
         val config = cfgBuilder.build()
         ccApp.launch(config)
     } catch (_: UserWantsToQuitProgramException) {
@@ -67,6 +69,4 @@ private fun startImmediateExecution(config: CopyCatConfiguration) {
     printYellow("startImmediateExecution() WORK IN PROGRESS")
     printWhite(config.toString())
     // TODO 6 implement immediate execution via command-line arguments
-    //val ccApp = CopyCatApplication()
-    //ccApp.launch(config)
 }
