@@ -54,6 +54,7 @@ private fun startUserInteraction(ccShell: CopyCatShell) {
         ccShell.letUserSelectFileTypesToBeCopied(cfgBuilder)
         ccShell.letUserSelectTempDirectory(cfgBuilder)
         ccShell.letUserDecideOnLogFile(cfgBuilder)
+        ccShell.letUserDecideToStart()
         val config = cfgBuilder.build()
         ccApp.launch(config)
     } catch (_: UserWantsToQuitProgramException) {

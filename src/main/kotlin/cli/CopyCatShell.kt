@@ -203,4 +203,14 @@ class CopyCatShell {
         config.printToFile =
             FileHelper.promptForBoolean("Do you want to create a log file in the destination directory?")
     }
+
+    fun letUserDecideToStart() {
+        while (true) {
+            printGreen("\nDo you want to start now? [Y/N or Q to quit]")
+            when (readlnOrNull()?.trim()?.lowercase()) {
+                "y" -> return
+                "n", "q" -> throw UserWantsToQuitProgramException()
+            }
+        }
+    }
 }
