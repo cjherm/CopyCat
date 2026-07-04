@@ -208,13 +208,22 @@ class CopyCatShell {
     }
 
     fun letUserSelectTempDirectory(config: CopyCatConfigurationBuilder) {
-        // TODO Fix this pseudo fix
-        config.useSeparateDestDir =
-            FileHelper.promptForBoolean("Do you want to use a separate destination directory?\nIf not, then CopyCat will use this one:\n${config.compareDir[0].absolutePath}")
+        config.useSeparateDestDir = if (config.compareDir.size == 1) {
+            FileHelper.promptForBoolean(
+                "Do you want to use a separate destination directory?\nIf not, then CopyCat will use this one:\n${config.compareDir[0].absolutePath}"
+            )
+        } else {
+            true
+        }
+
         if (config.useSeparateDestDir) {
-            // TODO Fix this pseudo fix
-            config.copyDestDir =
-                listOf(FileHelper.promptForDirectory("Enter the path to the separate directory:"))
+            val destDirs = mutableListOf<File>()
+            var addMoreDirs = Answer.YES
+            while (addMoreDirs == Answer.YES) {
+                destDirs.add(FileHelper.promptForDirectory("Enter the path to the destination directory:"))
+                addMoreDirs = FileHelper.askQuestionAndRequestAnswer("Do you want to add another directory?")
+            }
+            config.copyDestDir = destDirs
         } else {
             config.copyDestDir = config.compareDir
         }
