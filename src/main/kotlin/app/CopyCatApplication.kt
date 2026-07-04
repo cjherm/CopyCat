@@ -12,59 +12,68 @@ class CopyCatApplication {
     fun launch(config: CopyCatConfiguration) {
         printAndLogInfo("\nStarting copy process...", config)
         val files = config.filesSelectedToBeCopied
-        // TODO Fix these pseudo fixes
-        val sourceDir = config.sourceDirs[0]
-        val destDir = config.copyDestDirs[0]
+        val sourceDirs = config.sourceDirs
+        val destDirs = config.copyDestDirs
 
-        if (!destDir.exists()) {
-            destDir.mkdirs()
+        destDirs.forEach { destDir ->
+            if (!destDir.exists()) {
+                destDir.mkdirs()
+            }
         }
 
-        val totalFiles = files.size
-        if (totalFiles == 0) {
+        if (files.isEmpty()) {
             printAndLogWarn("No files to copy.", config)
             return
         }
 
-        val logStep = if (totalFiles > 10) totalFiles / 10 else totalFiles
+        val totalOperations = files.size * destDirs.size
+        val logStep = if (totalOperations > 10) totalOperations / 10 else totalOperations
         var copiedCount = 0
         var skippedCount = 0
         var failedCount = 0
 
-        files.forEachIndexed { _, file ->
-            try {
-                // Get relative path from sourceDir and build destination path
-                val relativePath = file.relativeTo(sourceDir).path
-                val destFile = File(destDir, relativePath)
+        files.forEach { file ->
+            val sourceDir = sourceDirs.firstOrNull { file.canonicalPath.startsWith(it.canonicalPath + File.separator) }
+            if (sourceDir == null) {
+                printAndLogError("Could not determine source directory for ${file.absolutePath}", config)
+                failedCount += destDirs.size
+                return@forEach
+            }
+            val relativePath = file.relativeTo(sourceDir).path
 
-                // Skip if file with same name and extension already exists
-                val fileTypeMatches = file.extension.equals(destFile.extension, ignoreCase = true)
-                val nameMatches = file.name.equals(destFile.name, ignoreCase = true)
+            destDirs.forEach destDirLoop@{ destDir ->
+                try {
+                    val destFile = File(destDir, relativePath)
 
-                if (destFile.exists() && nameMatches && fileTypeMatches) {
-                    skippedCount++
-                    return@forEachIndexed
+                    if (destFile.exists()) {
+                        printAndLogError(
+                            "Skipped ${file.name}: \"${destFile.absolutePath}\" already exists.",
+                            config
+                        )
+                        skippedCount++
+                        return@destDirLoop
+                    }
+
+                    // Create necessary subdirectories
+                    destFile.parentFile?.mkdirs()
+
+                    // Copy the file
+                    file.copyTo(destFile, overwrite = false)
+                    copiedCount++
+
+                    if ((totalOperations <= 10 && copiedCount == totalOperations) ||
+                        (totalOperations > 10 && copiedCount % logStep == 0)
+                    ) {
+                        printAndLogInfo("Copied $copiedCount / $totalOperations files...", config)
+                    }
+
+                } catch (e: IOException) {
+                    printAndLogError("Failed to copy ${file.name} to ${destDir.absolutePath}: ${e.message}", config)
+                    failedCount++
+                } catch (e: IllegalArgumentException) {
+                    printAndLogError("Path error for ${file.absolutePath}: ${e.message}", config)
+                    failedCount++
                 }
-
-                // Create necessary subdirectories
-                destFile.parentFile?.mkdirs()
-
-                // Copy the file
-                file.copyTo(destFile, overwrite = false)
-                copiedCount++
-
-                if ((totalFiles <= 10 && copiedCount == totalFiles) ||
-                    (totalFiles > 10 && copiedCount % logStep == 0)
-                ) {
-                    printAndLogInfo("Copied $copiedCount / $totalFiles files...", config)
-                }
-
-            } catch (e: IOException) {
-                printAndLogError("Failed to copy ${file.name}: ${e.message}", config)
-                failedCount++
-            } catch (e: IllegalArgumentException) {
-                printAndLogError("Path error for ${file.absolutePath}: ${e.message}", config)
-                failedCount++
             }
         }
 
