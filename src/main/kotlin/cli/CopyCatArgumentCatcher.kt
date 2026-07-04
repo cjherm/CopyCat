@@ -146,9 +146,6 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
             return null
         }
 
-        // TODO 1 this does not seem to work properly, it still seems to include files from different types then requested
-        // TODO 3 make sure we only include unique files
-        // TODO what do we do when the destination dir/s already have a file as we do not compare them when using -comp
         val filesSelectedToBeCopied = calculateFilesToCopy(srcDirs, compDirs, inclTypes, exclTypes)
 
         return CopyCatConfiguration(
@@ -159,14 +156,22 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
             printToFile = false
         )
     }
-    // TODO Fix this temporary pseudo fix
-    private fun calculateFilesToCopy(srcDir: List<File>, compDir: List<File>, types: List<String>, types2: List<String>): List<File> {
-        // TODO Fix this temporary pseudo fix
-        val uniqueFiles = FileHelper.findMissingFilesGroupedByType(srcDir[0], compDir[1])
-        return if (types.isEmpty()) {
-            uniqueFiles.values.flatten()
-        } else {
-            types.mapNotNull { uniqueFiles[it] }.flatten()
+    private fun calculateFilesToCopy(
+        srcDirs: List<File>,
+        compDirs: List<File>,
+        inclTypes: List<String>,
+        exclTypes: List<String>
+    ): List<File> {
+        val uniqueFiles = srcDirs
+            .flatMap { srcDir -> compDirs.map { compDir -> FileHelper.findMissingFilesGroupedByType(srcDir, compDir) } }
+            .flatMap { it.entries }
+            .groupBy({ it.key }, { it.value })
+            .mapValues { (_, lists) -> lists.flatten().distinctBy { Triple(it.name, it.extension.lowercase(), it.length()) } }
+
+        return when {
+            inclTypes.isNotEmpty() -> inclTypes.mapNotNull { uniqueFiles[it] }.flatten()
+            exclTypes.isNotEmpty() -> uniqueFiles.filterKeys { it !in exclTypes }.values.flatten()
+            else -> uniqueFiles.values.flatten()
         }
     }
 
