@@ -69,9 +69,9 @@ class CopyCatApplication {
         }
 
         printAndLogInfo("Finished copying.", config)
-        printAndLogInfo("\n                 Copied files: $copiedCount", config)
-        printAndLogInfo("Skipped files (already existed): $skippedCount", config)
-        printAndLogInfo("    Failed to copy due to error: $failedCount\n", config)
+        printAndLogInfo("\n$copiedCount files copied", config)
+        printAndLogInfo("$skippedCount files skipped (already existed in destination)", config)
+        printAndLogInfo("$failedCount files failed to copy\n", config)
     }
 
     fun printAndLogInfo(msg: String, cfg: CopyCatConfiguration) {
