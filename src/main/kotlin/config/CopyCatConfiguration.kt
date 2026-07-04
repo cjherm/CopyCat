@@ -16,7 +16,7 @@ class CopyCatConfiguration(
                 "                            \tSource directories: $srcPaths\n" +
                 "                            \tDestinations:       $destPaths\n" +
                 "                            \tFiles to copy:      ${filesSelectedToBeCopied.size}\n" +
-                "                            \tprintToConsole:     $printToConsole\n" +
-                "                            \tprintToFile:        $printToFile\n"
+                "                            \tlogToConsole:       $printToConsole\n" +
+                "                            \tlogToFile:          $printToFile\n"
     }
 }

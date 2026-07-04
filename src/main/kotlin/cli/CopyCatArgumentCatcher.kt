@@ -120,14 +120,42 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
         return types
     }
 
-    private fun retrieveLogSettingsFromArg() {
+    private fun retrieveLogToConsoleFromArg(): Boolean {
+        val logToConsole = argsList.contains(Flag(ArgumentKey.LOGC.key))
+        if (logToConsole) {
+            Logger.printToConsole = true
+            Logger.info("Logging to console enabled")
+        }
+        return logToConsole
+    }
+
+    private fun retrieveLogFileFromArg(): Boolean {
         val logFilePath = argsList.singleValueOf(ArgumentKey.LOGF)
-        if (logFilePath != null) Logger.logFile = File(logFilePath)
-        if (argsList.contains(Flag(ArgumentKey.LOGC.key))) Logger.printToConsole = true
+        if (logFilePath.isNullOrBlank()) return false
+
+        val logFile = File(logFilePath)
+        if (logFile.isDirectory) {
+            Logger.error("Log file path points to a directory, not a file: ${logFile.absolutePath}")
+            return false
+        }
+
+        if (!logFile.exists()) {
+            Logger.info("Log file does not exist and must be created: ${logFile.absolutePath}")
+            logFile.parentFile?.mkdirs()
+            if (!logFile.createNewFile()) {
+                Logger.error("Log file could not be created: ${logFile.absolutePath}")
+                return false
+            }
+        }
+
+        Logger.logFile = logFile
+        Logger.info("Set log file: ${logFile.absolutePath}")
+        return true
     }
 
     fun getConfig(): CopyCatConfiguration? {
-        retrieveLogSettingsFromArg()
+        val printToConsole = retrieveLogToConsoleFromArg()
+        val printToFile = retrieveLogFileFromArg()
         val srcDirs = retrieveSrcDirsFromArg()
         val destDirs = retrieveDestDirsFromArg(srcDirs)
         val compDirsTemp = retrieveCompDirsFromArg(srcDirs)
@@ -152,8 +180,8 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
             sourceDirs = srcDirs,
             copyDestDirs = destDirs,
             filesSelectedToBeCopied = filesSelectedToBeCopied,
-            printToConsole = false,
-            printToFile = false
+            printToConsole = printToConsole,
+            printToFile = printToFile
         )
     }
     private fun calculateFilesToCopy(
