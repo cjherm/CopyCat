@@ -87,12 +87,12 @@ class FileHelper {
 
                 when {
                     !dir.exists() -> {
-                        printGreen("Directory does not exist. Create it? [Y/N or Q to exit]: ")
+                        printGreen("\nDirectory does not exist. Create it? [Y/N or Q to exit]: ")
                         val createAnswer = readlnOrNull()?.trim().orEmpty()
                         if (createAnswer.lowercase() == "q") throw UserWantsToQuitProgramException()
                         if (createAnswer.equals("y", ignoreCase = true)) {
                             if (dir.mkdirs()) {
-                                println("Directory created.")
+                                println("\nDirectory created.")
                                 return dir
                             } else {
                                 printRed("Failed to create directory. Try again.")
