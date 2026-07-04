@@ -167,8 +167,9 @@ class CopyCatShell {
                 "2" -> typeFileMode = "exclude"
             }
 
-            if (modeSelection.isEmpty()) {
+            if (modeSelection == "3") {
                 selectedFileTypes = config.uniqueFiles.keys.toList()
+                userAnswer = Answer.YES
             } else {
                 printGreen("\nWhich files do you want to Do you want to $typeFileMode? Separate with blank spaces: jpg png [Q to quit]")
                 val enteredLine = readlnOrNull()
