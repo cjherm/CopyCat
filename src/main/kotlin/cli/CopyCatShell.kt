@@ -6,6 +6,7 @@ import utility.ConsolePrinter.Companion.printGreen
 import utility.ConsolePrinter.Companion.printWhite
 import utility.ConsolePrinter.Companion.printYellow
 import utility.FileHelper
+import utility.UserInteraction
 import utility.UserWantsToQuitProgramException
 import java.io.File
 
@@ -40,7 +41,7 @@ class CopyCatShell {
 
             var addMoreDirs = Answer.YES
             while (addMoreDirs == Answer.YES) {
-                val dirCandidate = FileHelper.promptForValidDirectory("Enter the path to the $dirTypeString directory:")
+                val dirCandidate = UserInteraction.promptForValidDirectory("Enter the path to the $dirTypeString directory:")
                 if (!candidateIsNoDuplicate(dirList, dirCandidate)) {
                     // yellow message already printed inside candidateIsNoDuplicate
                 } else if (listToCheckAgainst != null && !candidateIsNoDuplicate(listToCheckAgainst, dirCandidate)) {
@@ -48,7 +49,7 @@ class CopyCatShell {
                 } else {
                     dirList.add(dirCandidate)
                 }
-                addMoreDirs = FileHelper.askQuestionAndRequestAnswer("Do you want add another directory?")
+                addMoreDirs = UserInteraction.askQuestionAndRequestAnswer("Do you want add another directory?")
             }
 
             printWhite(
@@ -58,15 +59,15 @@ class CopyCatShell {
                         printDirs(dirList)
             )
 
-            selectionIsCorrect = FileHelper.askQuestionAndRequestAnswer("Is this correct?")
+            selectionIsCorrect = UserInteraction.askQuestionAndRequestAnswer("Is this correct?")
 
             if (selectionIsCorrect == Answer.YES) {
                 break
             }
 
-            if (FileHelper.askQuestionAndRequestAnswer("Do you want to remove item/s from this list?") == Answer.YES) {
+            if (UserInteraction.askQuestionAndRequestAnswer("Do you want to remove item/s from this list?") == Answer.YES) {
                 val entriesToBeRemoved =
-                    FileHelper.askQuestionAndRequestIntegerList("What entry do you want to remove?\nWhen you want to enter multiple entries, separate them with an empty space: \"X Y\"")
+                    UserInteraction.askQuestionAndRequestIntegerList("What entry do you want to remove?\nWhen you want to enter multiple entries, separate them with an empty space: \"X Y\"")
                 removeEntriesFromList(entriesToBeRemoved, dirList)
 
                 printWhite(
@@ -76,7 +77,7 @@ class CopyCatShell {
                             printDirs(dirList)
                 )
 
-                selectionIsCorrect = FileHelper.askQuestionAndRequestAnswer("Is this correct?")
+                selectionIsCorrect = UserInteraction.askQuestionAndRequestAnswer("Is this correct?")
             }
         }
     }
@@ -143,7 +144,7 @@ class CopyCatShell {
                 lists.flatten().distinctBy { Triple(it.name, it.extension.lowercase(), it.length()) }
             }
         config.uniqueFiles = uniqueFilesList
-        FileHelper.printAllTypesOfUniqueFiles(uniqueFilesList)
+        UserInteraction.printAllTypesOfUniqueFiles(uniqueFilesList)
     }
 
     fun letUserSelectFileTypesToBeCopied(config: CopyCatConfigurationBuilder) {
@@ -151,7 +152,7 @@ class CopyCatShell {
         var selectedFileTypes = listOf<String>()
         var typeFileMode = ""
         while (userAnswer != Answer.YES) {
-            var modeSelection = ""
+            var modeSelection: String
             while (true) {
                 printGreen("\nDo you want to include/exclude file types?\n\t1) Include\n\t2) Exclude\n\t3) Do nothing")
                 modeSelection = readln().trim()
@@ -181,7 +182,7 @@ class CopyCatShell {
                     selectedFileTypes =
                         extractAndFilterStrings(trimmedLine, config.uniqueFiles.keys, (typeFileMode == "include"))
                     printWhite("\nYour selection is: $selectedFileTypes")
-                    userAnswer = FileHelper.askQuestionAndRequestAnswer("Is this selection correct?")
+                    userAnswer = UserInteraction.askQuestionAndRequestAnswer("Is this selection correct?")
                 }
             }
         }
@@ -210,7 +211,7 @@ class CopyCatShell {
 
     fun letUserSelectTempDirectory(config: CopyCatConfigurationBuilder) {
         config.useSeparateDestDir = if (config.compareDir.size == 1) {
-            FileHelper.promptForBoolean(
+            UserInteraction.promptForBoolean(
                 "Do you want to use a separate destination directory?\nIf not, then CopyCat will use this one:\n${config.compareDir[0].absolutePath}"
             )
         } else {
@@ -221,8 +222,8 @@ class CopyCatShell {
             val destDirs = mutableListOf<File>()
             var addMoreDirs = Answer.YES
             while (addMoreDirs == Answer.YES) {
-                destDirs.add(FileHelper.promptForDirectory("Enter the path to the destination directory:"))
-                addMoreDirs = FileHelper.askQuestionAndRequestAnswer("Do you want to add another directory?")
+                destDirs.add(UserInteraction.promptForDirectory("Enter the path to the destination directory:"))
+                addMoreDirs = UserInteraction.askQuestionAndRequestAnswer("Do you want to add another directory?")
             }
             config.copyDestDir = destDirs
         } else {
@@ -243,7 +244,7 @@ class CopyCatShell {
 
     fun letUserDecideOnLogFile(config: CopyCatConfigurationBuilder) {
         config.printToFile =
-            FileHelper.promptForBoolean("Do you want to create a log file in the destination directory?")
+            UserInteraction.promptForBoolean("Do you want to create a log file in the destination directory?")
     }
 
     fun letUserDecideToStart() {
