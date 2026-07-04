@@ -129,10 +129,19 @@ class CopyCatShell {
     fun createUniqueFilesLists(config: CopyCatConfigurationBuilder) {
         printWhite("\nStart to searching for unique files in source directory...\n")
         val uniqueFilesList = config.sourceDir
-            .flatMap { srcDir -> config.compareDir.map { compareDir -> FileHelper.findMissingFilesGroupedByType(srcDir, compareDir) } }
+            .flatMap { srcDir ->
+                config.compareDir.map { compareDir ->
+                    FileHelper.findMissingFilesGroupedByType(
+                        srcDir,
+                        compareDir
+                    )
+                }
+            }
             .flatMap { it.entries }
             .groupBy({ it.key }, { it.value })
-            .mapValues { (_, lists) -> lists.flatten().distinctBy { Triple(it.name, it.extension.lowercase(), it.length()) } }
+            .mapValues { (_, lists) ->
+                lists.flatten().distinctBy { Triple(it.name, it.extension.lowercase(), it.length()) }
+            }
         config.uniqueFiles = uniqueFilesList
         FileHelper.printAllTypesOfUniqueFiles(uniqueFilesList)
     }
@@ -140,24 +149,47 @@ class CopyCatShell {
     fun letUserSelectFileTypesToBeCopied(config: CopyCatConfigurationBuilder) {
         var userAnswer = Answer.UNDEFINED
         var selectedFileTypes = listOf<String>()
+        var typeFileMode = ""
         while (userAnswer != Answer.YES) {
-            printGreen("\nPlease select what file types should be copied like this: jpg png or $ for all or Q to quit")
-            val enteredLine = readlnOrNull()
-            if (enteredLine != null) {
-                val trimmedLine = enteredLine.trim()
-                if (trimmedLine.lowercase() == "q") {
+            var modeSelection = ""
+            while (true) {
+                printGreen("\nDo you want to include/exclude file types?\n\t1) Include\n\t2) Exclude\n\t3) Do nothing")
+                modeSelection = readln().trim()
+                if (modeSelection.lowercase() == "q") {
                     throw UserWantsToQuitProgramException()
                 }
-                selectedFileTypes = if (trimmedLine == "$") {
-                    config.uniqueFiles.keys.toList()
-                } else {
-                    extractAndFilterStrings(trimmedLine, config.uniqueFiles.keys)
+                if (modeSelection == "1" || modeSelection == "2" || modeSelection == "3") {
+                    break
                 }
-                printWhite("\nYour selection is: $selectedFileTypes")
-                userAnswer = FileHelper.askQuestionAndRequestAnswer("\nIs this selection correct?")
+            }
+            when (modeSelection) {
+                "1" -> typeFileMode = "include"
+                "2" -> typeFileMode = "exclude"
+            }
+
+            if (modeSelection.isEmpty()) {
+                selectedFileTypes = config.uniqueFiles.keys.toList()
+            } else {
+                printGreen("\nWhich files do you want to Do you want to $typeFileMode? Separate with blank spaces: jpg png [Q to quit]")
+                val enteredLine = readlnOrNull()
+                if (enteredLine != null) {
+                    val trimmedLine = enteredLine.trim()
+                    if (trimmedLine.lowercase() == "q") {
+                        throw UserWantsToQuitProgramException()
+                    }
+                    selectedFileTypes =
+                        extractAndFilterStrings(trimmedLine, config.uniqueFiles.keys, (typeFileMode == "include"))
+                    printWhite("\nYour selection is: $selectedFileTypes")
+                    userAnswer = FileHelper.askQuestionAndRequestAnswer("Is this selection correct?")
+                }
             }
         }
         config.filesSelectedToBeCopied = collectFilesForKeys(selectedFileTypes, config.uniqueFiles)
+
+        val totalFiles = config.uniqueFiles.values.sumOf { it.size }
+        val includedFiles = config.filesSelectedToBeCopied.size
+        val excludedFiles = totalFiles - includedFiles
+        printWhite("\nIncluding $includedFiles files of ${selectedFileTypes.size} different file types and excluding $excludedFiles files.")
     }
 
     private fun collectFilesForKeys(keys: List<String>, map: Map<String, List<File>>): List<File> {
@@ -166,12 +198,12 @@ class CopyCatShell {
             .flatten()                       // Combine all lists into one
     }
 
-    private fun extractAndFilterStrings(input: String, allowedSet: Set<String>): List<String> {
+    private fun extractAndFilterStrings(input: String, filter: Set<String>, include: Boolean): List<String> {
         return input
             .split("\\s+".toRegex())         // Split by whitespace
             .filter { it.isNotBlank() }      // Ignore blanks
             .distinct()                      // Remove duplicates
-            .filter { it in allowedSet }     // Keep only allowed strings
+            .filter { if (include) it in filter else it !in filter }
             .sorted()                        // Sort result
     }
 
