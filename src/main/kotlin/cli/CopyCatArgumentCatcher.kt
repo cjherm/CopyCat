@@ -173,9 +173,10 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
         val compDirsTemp = retrieveCompDirsFromArg(srcDirs)
         val inclTypes = retrieveInclTypesFromArg()
         val exclTypes = retrieveExclTypesFromArg()
+        var configIsValid = true
 
         if (srcDirs.isEmpty() || destDirs.isEmpty()) {
-            return null
+            configIsValid = false
         }
 
         // no separate directory/ies set for comparison, so will compare to destination directory/ies
@@ -183,7 +184,7 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
 
         if(compDirs.isEmpty()){
             // the argument "-comp" was used at least once without a valid path, so we have a problem
-            return null
+            configIsValid = false
         }
 
         val filesSelectedToBeCopied = calculateFilesToCopy(srcDirs, compDirs, inclTypes, exclTypes)
@@ -193,7 +194,8 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
             copyDestDirs = destDirs,
             filesSelectedToBeCopied = filesSelectedToBeCopied,
             printToConsole = printToConsole,
-            printToFile = printToFile
+            printToFile = printToFile,
+            configIsValid = configIsValid
         )
     }
     private fun calculateFilesToCopy(

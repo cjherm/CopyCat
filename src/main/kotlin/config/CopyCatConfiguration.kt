@@ -8,7 +8,8 @@ class CopyCatConfiguration(
     val copyDestDirs: List<File>,
     val filesSelectedToBeCopied: List<File>,
     val printToConsole: Boolean,
-    val printToFile: Boolean
+    val printToFile: Boolean,
+    val configIsValid: Boolean
 ) {
     override fun toString(): String {
         val srcPaths = sourceDirs.joinToString("\n\t\t\t\t\t\t\t\t") { it.absolutePath }
@@ -20,6 +21,7 @@ class CopyCatConfiguration(
                 "                            \tFiles to copy:      ${filesSelectedToBeCopied.size}\n" +
                 "                            \tlogToConsole:       $printToConsole\n" +
                 "                            \tlogToFile:          $printToFile\n" +
-                "                            \tlogFile:            $logFilePath"
+                "                            \tlogFile:            $logFilePath\n" +
+                "                            \tconfig is valid:    $configIsValid"
     }
 }

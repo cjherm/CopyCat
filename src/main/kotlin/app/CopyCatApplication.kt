@@ -10,6 +10,12 @@ import java.io.IOException
 
 class CopyCatApplication {
     fun launch(config: CopyCatConfiguration) {
+
+        if (!config.configIsValid) {
+            logError("Invalid Configuration! Cannot execute program!\n$config", config)
+            return
+        }
+
         logInfo("\nStarting copy process...", config)
         val files = config.filesSelectedToBeCopied
         val sourceDirs = config.sourceDirs
