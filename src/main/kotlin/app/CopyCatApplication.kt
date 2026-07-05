@@ -10,7 +10,7 @@ import java.io.IOException
 
 class CopyCatApplication {
     fun launch(config: CopyCatConfiguration) {
-        printAndLogInfo("\nStarting copy process...", config)
+        logInfo("\nStarting copy process...", config)
         val files = config.filesSelectedToBeCopied
         val sourceDirs = config.sourceDirs
         val destDirs = config.copyDestDirs
@@ -22,7 +22,7 @@ class CopyCatApplication {
         }
 
         if (files.isEmpty()) {
-            printAndLogWarn("No files to copy.", config)
+            logWarn("No files to copy.", config)
             return
         }
 
@@ -35,7 +35,7 @@ class CopyCatApplication {
         files.forEach { file ->
             val sourceDir = sourceDirs.firstOrNull { file.canonicalPath.startsWith(it.canonicalPath + File.separator) }
             if (sourceDir == null) {
-                printAndLogError("Could not determine source directory for ${file.absolutePath}", config)
+                logError("Could not determine source directory for ${file.absolutePath}", config)
                 failedCount += destDirs.size
                 return@forEach
             }
@@ -46,7 +46,7 @@ class CopyCatApplication {
                     val destFile = File(destDir, relativePath)
 
                     if (destFile.exists()) {
-                        printAndLogError(
+                        logError(
                             "Skipped ${file.name}: \"${destFile.absolutePath}\" already exists.",
                             config
                         )
@@ -64,26 +64,26 @@ class CopyCatApplication {
                     if ((totalOperations <= 10 && copiedCount == totalOperations) ||
                         (totalOperations > 10 && copiedCount % logStep == 0)
                     ) {
-                        printAndLogInfo("Copied $copiedCount / $totalOperations files...", config)
+                        logInfo("Copied $copiedCount / $totalOperations files...", config)
                     }
 
                 } catch (e: IOException) {
-                    printAndLogError("Failed to copy ${file.name} to ${destDir.absolutePath}: ${e.message}", config)
+                    logError("Failed to copy ${file.name} to ${destDir.absolutePath}: ${e.message}", config)
                     failedCount++
                 } catch (e: IllegalArgumentException) {
-                    printAndLogError("Path error for ${file.absolutePath}: ${e.message}", config)
+                    logError("Path error for ${file.absolutePath}: ${e.message}", config)
                     failedCount++
                 }
             }
         }
 
-        printAndLogInfo("Finished copying.", config)
-        printAndLogInfo("\n$copiedCount files copied", config)
-        printAndLogInfo("$skippedCount files skipped (already existed in destination)", config)
-        printAndLogInfo("$failedCount files failed to copy\n", config)
+        logInfo("Finished copying.", config)
+        logInfo("\n$copiedCount files copied", config)
+        logInfo("$skippedCount files skipped (already existed in destination)", config)
+        logInfo("$failedCount files failed to copy\n", config)
     }
 
-    fun printAndLogInfo(msg: String, cfg: CopyCatConfiguration) {
+    fun logInfo(msg: String, cfg: CopyCatConfiguration) {
         if (cfg.printToConsole) {
             printWhite(msg)
         }
@@ -92,7 +92,7 @@ class CopyCatApplication {
         }
     }
 
-    fun printAndLogWarn(msg: String, cfg: CopyCatConfiguration) {
+    fun logWarn(msg: String, cfg: CopyCatConfiguration) {
         if (cfg.printToConsole) {
             printYellow(msg)
         }
@@ -101,7 +101,7 @@ class CopyCatApplication {
         }
     }
 
-    fun printAndLogError(msg: String, cfg: CopyCatConfiguration) {
+    fun logError(msg: String, cfg: CopyCatConfiguration) {
         if (cfg.printToConsole) {
             printRed(msg)
         }
