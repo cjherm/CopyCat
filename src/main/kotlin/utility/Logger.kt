@@ -30,7 +30,7 @@ object Logger {
     }
 
     @Volatile
-    var printToConsole = false
+    var printToConsole = true
 
     @Volatile
     var logFile: File? = null

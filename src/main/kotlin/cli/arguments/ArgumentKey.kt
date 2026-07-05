@@ -4,7 +4,7 @@ enum class ArgumentKey(val key: String) {
     HELP("help"),
     GUI("gui"),
     LOGF("logf"),
-    LOGC("logc"),
+    NO_LOGC("no-logc"),
     SRC("src"),
     DEST("dest"),
     COMP("comp"),

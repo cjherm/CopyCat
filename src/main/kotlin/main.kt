@@ -77,7 +77,7 @@ private fun showHelp() {
                 "\t-incl TYPE    Only include this file type\n" +
                 "\t-excl TYPE    Exclude this file types\n" +
                 "\t-gui          If you want to use the GUI\n" +
-                "\t-logc         Enable log to console\n" +
+                "\t-no-logc      Disable log to console (enabled by default)\n" +
                 "\t-logf         Enable log to file, written to the first destination directory as yyyy_MM_dd__HH_mm_ss.log\n" +
                 "\t-logf PATH    Enable log to file; PATH to a directory creates yyyy_MM_dd__HH_mm_ss.log there, PATH to a file writes/creates that exact file"
     )

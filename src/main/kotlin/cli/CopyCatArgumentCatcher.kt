@@ -115,18 +115,18 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
     }
 
     private fun retrieveLogToConsoleFromArg(): Boolean {
-        val logToConsole = argsList.contains(Flag(ArgumentKey.LOGC.key))
-        if (logToConsole) {
-            Logger.printToConsole = true
-            Logger.info("Logging to console enabled")
+        val suppressLogToConsole = argsList.contains(Flag(ArgumentKey.NO_LOGC.key))
+        Logger.printToConsole = !suppressLogToConsole
+        if (suppressLogToConsole) {
+            Logger.info("Logging to console disabled")
         }
-        return logToConsole
+        return !suppressLogToConsole
     }
 
     private fun retrieveLogFileFromArg(destDirs: List<File>): Boolean {
-        val logfArg = argsList.filterIsInstance<SingleValueArgument>().find { it.key == ArgumentKey.LOGF.key }
+        val logArg = argsList.filterIsInstance<SingleValueArgument>().find { it.key == ArgumentKey.LOGF.key }
             ?: return false
-        val logFilePath = logfArg.value
+        val logFilePath = logArg.value
 
         val logFile = when {
             logFilePath.isBlank() -> {
@@ -239,7 +239,7 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
                             SingleValueArgument(argumentKey.key, value ?: "")
                         }
 
-                        ArgumentKey.GUI, ArgumentKey.LOGC ->
+                        ArgumentKey.GUI, ArgumentKey.NO_LOGC ->
                             Flag(argumentKey.key)
 
                         ArgumentKey.HELP -> null
