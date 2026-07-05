@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.9.23"
     application
+    id("org.jetbrains.compose") version "1.6.11"
 }
 
 group = "me.ak_indiana"
@@ -10,9 +11,11 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    google()
 }
 
 dependencies {
+    implementation(compose.desktop.currentOs)
     testImplementation(kotlin("test"))
 }
 

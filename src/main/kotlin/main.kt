@@ -1,10 +1,10 @@
 import app.CopyCatApplication
+import app.CopyCatGui
 import cli.CopyCatArgumentCatcher
 import cli.CopyCatShell
 import config.CopyCatConfiguration
 import config.CopyCatConfigurationBuilder
 import utility.ConsolePrinter.Companion.printWhite
-import utility.ConsolePrinter.Companion.printYellow
 import utility.RestartProgramException
 import utility.UserWantsToQuitProgramException
 
@@ -25,7 +25,7 @@ fun main(args: Array<String>) {
     val config = caughtArgs.getConfig()
 
     if (CopyCatArgumentCatcher.userRequestsGui(args)) {
-        startGui(config)
+        CopyCatGui(config)
         return
     }
 
@@ -35,11 +35,6 @@ fun main(args: Array<String>) {
 private fun startImmediateExecution(config: CopyCatConfiguration) {
     val ccApp = CopyCatApplication()
     ccApp.launch(config)
-}
-
-private fun startGui(config: CopyCatConfiguration?) {
-    printYellow("startGui() WORK IN PROGRESS")
-    // TODO 5 implement GUI
 }
 
 private fun startShell() {
