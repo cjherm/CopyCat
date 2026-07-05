@@ -25,7 +25,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import config.CopyCatConfiguration
 import java.io.File
 import javax.swing.JFileChooser
 
@@ -149,21 +148,27 @@ private fun DirectorySection(
 
 @Composable
 fun DirectorySelectionScreen(
-    initialConfig: CopyCatConfiguration,
+    initialSourceDirs: List<File>,
+    initialCompareDirs: List<File>?,
+    initialDestDirs: List<File>,
     onNext: (sourceDirs: List<File>, compareDirs: List<File>?, destDirs: List<File>) -> Unit
 ) {
     val sourceRows = remember {
         mutableStateListOf<DirectoryRowState>().apply {
-            initialConfig.sourceDirs.ifEmpty { listOf(File("")) }.forEach { add(DirectoryRowState(it.path)) }
+            initialSourceDirs.ifEmpty { listOf(File("")) }.forEach { add(DirectoryRowState(it.path)) }
         }
     }
     val destRows = remember {
         mutableStateListOf<DirectoryRowState>().apply {
-            initialConfig.copyDestDirs.ifEmpty { listOf(File("")) }.forEach { add(DirectoryRowState(it.path)) }
+            initialDestDirs.ifEmpty { listOf(File("")) }.forEach { add(DirectoryRowState(it.path)) }
         }
     }
-    val compareRows = remember { mutableStateListOf(DirectoryRowState()) }
-    var compareActive by remember { mutableStateOf(false) }
+    val compareRows = remember {
+        mutableStateListOf<DirectoryRowState>().apply {
+            (initialCompareDirs?.ifEmpty { listOf(File("")) } ?: listOf(File(""))).forEach { add(DirectoryRowState(it.path)) }
+        }
+    }
+    var compareActive by remember { mutableStateOf(initialCompareDirs != null) }
 
     val sourceSelf = sourceRows.map { checkDirectorySelf(it.path, mustExist = true, requireNonEmpty = true) }
     val compareSelf = if (compareActive) {

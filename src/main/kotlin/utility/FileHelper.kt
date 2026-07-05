@@ -39,17 +39,21 @@ class FileHelper {
             }
         }
 
+        fun findUniqueFilesGroupedByType(srcDirs: List<File>, compDirs: List<File>): Map<String, List<File>> {
+            return srcDirs
+                .flatMap { srcDir -> compDirs.map { compDir -> findMissingFilesGroupedByType(srcDir, compDir) } }
+                .flatMap { it.entries }
+                .groupBy({ it.key }, { it.value })
+                .mapValues { (_, lists) -> lists.flatten().distinctBy { Triple(it.name, it.extension.lowercase(), it.length()) } }
+        }
+
         fun calculateFilesToCopy(
             srcDirs: List<File>,
             compDirs: List<File>,
             inclTypes: List<String>,
             exclTypes: List<String>
         ): List<File> {
-            val uniqueFiles = srcDirs
-                .flatMap { srcDir -> compDirs.map { compDir -> findMissingFilesGroupedByType(srcDir, compDir) } }
-                .flatMap { it.entries }
-                .groupBy({ it.key }, { it.value })
-                .mapValues { (_, lists) -> lists.flatten().distinctBy { Triple(it.name, it.extension.lowercase(), it.length()) } }
+            val uniqueFiles = findUniqueFilesGroupedByType(srcDirs, compDirs)
 
             return when {
                 inclTypes.isNotEmpty() -> inclTypes.mapNotNull { uniqueFiles[it] }.flatten()
