@@ -166,7 +166,7 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
     private fun defaultLogDirectory(): File {
         val codeSourceLocation = File(CopyCatArgumentCatcher::class.java.protectionDomain.codeSource.location.toURI())
         val appDir = if (codeSourceLocation.isFile) codeSourceLocation.parentFile else codeSourceLocation
-        return File(appDir, "log")
+        return File(appDir, "logs")
     }
 
     fun getConfig(): CopyCatConfiguration {
@@ -264,7 +264,7 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
                         "\t-gui          If you want to use the GUI\n" +
                         "\t-no-logc      Disable log to console (enabled by default)\n" +
                         "\t-logf PATH    Log to file at PATH; a directory creates yyyy_MM_dd__HH_mm_ss.log there, a file path writes/creates that exact file\n" +
-                        "\t-no-logf      Disable log to file (by default a log file is created in a \"log\" directory next to the jar)"
+                        "\t-no-logf      Disable log to file (by default a log file is created in a \"logs\" directory next to the jar)"
             )
         }
     }
