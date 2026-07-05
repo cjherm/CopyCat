@@ -16,7 +16,7 @@ fun main(args: Array<String>) {
         return
     }
 
-    if (CopyCatArgumentCatcher.containsHelpArg(args)) {
+    if (CopyCatArgumentCatcher.userRequestsHelp(args)) {
         showHelp()
         return
     }
@@ -24,7 +24,7 @@ fun main(args: Array<String>) {
     val caughtArgs = CopyCatArgumentCatcher(args)
     val config = caughtArgs.getConfig()
 
-    if (caughtArgs.requestsGui()) {
+    if (CopyCatArgumentCatcher.userRequestsGui(args)) {
         startGui(config)
         return
     }

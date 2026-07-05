@@ -251,8 +251,13 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
     }
 
     companion object {
-        fun containsHelpArg(args: Array<String>): Boolean {
+
+        fun userRequestsHelp(args: Array<String>): Boolean {
             return args.contains("-${ArgumentKey.HELP.key}")
+        }
+
+        fun userRequestsGui(args: Array<String>): Boolean {
+            return args.contains("-${ArgumentKey.GUI.key}")
         }
     }
 }
