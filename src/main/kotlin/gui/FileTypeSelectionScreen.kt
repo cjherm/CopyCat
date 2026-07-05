@@ -19,10 +19,14 @@ import androidx.compose.material.Button
 import androidx.compose.material.Checkbox
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -30,6 +34,18 @@ import utility.FileHelper
 import java.io.File
 
 private data class FileTypeInfo(val type: String, val count: Int, val totalSizeBytes: Long)
+
+private enum class SortCriterion(val label: String) {
+    NAME("Name"),
+    FILE_COUNT("File count"),
+    SIZE("Size")
+}
+
+private fun List<FileTypeInfo>.sortedByCriterion(criterion: SortCriterion): List<FileTypeInfo> = when (criterion) {
+    SortCriterion.NAME -> sortedBy { it.type }
+    SortCriterion.FILE_COUNT -> sortedByDescending { it.count }
+    SortCriterion.SIZE -> sortedByDescending { it.totalSizeBytes }
+}
 
 private fun formatBytes(bytes: Long): String {
     if (bytes < 1024) return "$bytes B"
@@ -64,15 +80,19 @@ fun FileTypeSelectionScreen(
         FileHelper.findUniqueFilesGroupedByType(sourceDirs, compareDirs)
     }
 
-    val fileTypes = remember(uniqueFilesByType) {
-        uniqueFilesByType
-            .map { (type, files) -> FileTypeInfo(type, files.size, files.sumOf { it.length() }) }
-            .sortedByDescending { it.count }
+    val unsortedFileTypes = remember(uniqueFilesByType) {
+        uniqueFilesByType.map { (type, files) -> FileTypeInfo(type, files.size, files.sumOf { it.length() }) }
     }
 
-    val selectedTypes = remember(fileTypes) {
+    var sortCriterion by remember(uniqueFilesByType) { mutableStateOf(SortCriterion.FILE_COUNT) }
+    val fileTypes = remember(unsortedFileTypes, sortCriterion) {
+        unsortedFileTypes.sortedByCriterion(sortCriterion)
+    }
+
+    // Keyed on the unsorted set, not the sorted "fileTypes" list, so changing the sort order doesn't reset selections
+    val selectedTypes = remember(unsortedFileTypes) {
         mutableStateMapOf<String, Boolean>().apply {
-            fileTypes.forEach { put(it.type, true) }
+            unsortedFileTypes.forEach { put(it.type, true) }
         }
     }
 
@@ -95,6 +115,23 @@ fun FileTypeSelectionScreen(
         if (fileTypes.isEmpty()) {
             Text("No new files found to copy.")
         } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Sort by:")
+                Spacer(modifier = Modifier.width(8.dp))
+                SortCriterion.entries.forEach { criterion ->
+                    Spacer(modifier = Modifier.width(4.dp))
+                    if (criterion == sortCriterion) {
+                        Button(onClick = { sortCriterion = criterion }) {
+                            Text(criterion.label)
+                        }
+                    } else {
+                        OutlinedButton(onClick = { sortCriterion = criterion }) {
+                            Text(criterion.label)
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                     checked = allSelected,
