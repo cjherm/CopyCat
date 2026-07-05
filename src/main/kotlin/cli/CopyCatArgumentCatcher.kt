@@ -5,6 +5,7 @@ import cli.arguments.ArgumentKey
 import cli.arguments.Flag
 import cli.arguments.SingleValueArgument
 import config.CopyCatConfiguration
+import utility.AppLocation
 import utility.ConsolePrinter.Companion.printWhite
 import utility.FileHelper
 import utility.Logger
@@ -163,11 +164,7 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
         return true
     }
 
-    private fun defaultLogDirectory(): File {
-        val codeSourceLocation = File(CopyCatArgumentCatcher::class.java.protectionDomain.codeSource.location.toURI())
-        val appDir = if (codeSourceLocation.isFile) codeSourceLocation.parentFile else codeSourceLocation
-        return File(appDir, "logs")
-    }
+    private fun defaultLogDirectory(): File = File(AppLocation.directory(), "logs")
 
     fun getConfig(): CopyCatConfiguration {
         val printToConsole = retrieveLogToConsoleFromArg()
@@ -239,12 +236,25 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
 
     companion object {
 
+        private val DIRECTORY_OR_FILTER_KEYS = setOf(
+            ArgumentKey.SRC.key,
+            ArgumentKey.DEST.key,
+            ArgumentKey.COMP.key,
+            ArgumentKey.TYPES_INCL.key,
+            ArgumentKey.TYPES_EXCL.key
+        )
+
         fun userRequestsHelp(args: Array<String>): Boolean {
             return args.contains("-${ArgumentKey.HELP.key}")
         }
 
         fun userRequestsGui(args: Array<String>): Boolean {
             return args.contains("-${ArgumentKey.GUI.key}")
+        }
+
+        // Used by the GUI to decide whether to prefill directories from lastSettings.config or from these CLI args
+        fun userProvidedDirectoryOrFilterArgs(args: Array<String>): Boolean {
+            return args.any { it.removePrefix("-") in DIRECTORY_OR_FILTER_KEYS }
         }
 
         fun printHelp() {

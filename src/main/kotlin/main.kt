@@ -25,7 +25,7 @@ fun main(args: Array<String>) {
     val config = caughtArgs.getConfig()
 
     if (CopyCatArgumentCatcher.userRequestsGui(args)) {
-        CopyCatGui(config)
+        CopyCatGui(config, skipLastSettings = CopyCatArgumentCatcher.userProvidedDirectoryOrFilterArgs(args))
         return
     }
 
