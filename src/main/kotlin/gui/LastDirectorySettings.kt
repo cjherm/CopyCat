@@ -17,9 +17,9 @@ object LastDirectorySettingsStore {
     fun save(settings: LastDirectorySettings) {
         val properties = Properties()
         properties.setProperty("compareActive", (settings.compareDirs != null).toString())
-        writeDirs(properties, "source", settings.sourceDirs)
-        writeDirs(properties, "compare", settings.compareDirs.orEmpty())
-        writeDirs(properties, "dest", settings.destDirs)
+        properties.setDirs("source", settings.sourceDirs)
+        properties.setDirs("compare", settings.compareDirs.orEmpty())
+        properties.setDirs("dest", settings.destDirs)
 
         file.outputStream().use { properties.store(it, "CopyCat - last used directory settings") }
     }
@@ -31,22 +31,12 @@ object LastDirectorySettingsStore {
         file.inputStream().use { properties.load(it) }
 
         val compareActive = properties.getProperty("compareActive")?.toBoolean() ?: false
-        val compareDirs = readDirs(properties, "compare")
+        val compareDirs = properties.getDirs("compare")
 
         return LastDirectorySettings(
-            sourceDirs = readDirs(properties, "source"),
+            sourceDirs = properties.getDirs("source"),
             compareDirs = if (compareActive) compareDirs else null,
-            destDirs = readDirs(properties, "dest")
+            destDirs = properties.getDirs("dest")
         )
-    }
-
-    private fun writeDirs(properties: Properties, prefix: String, dirs: List<File>) {
-        properties.setProperty("$prefix.count", dirs.size.toString())
-        dirs.forEachIndexed { index, dir -> properties.setProperty("$prefix.$index", dir.path) }
-    }
-
-    private fun readDirs(properties: Properties, prefix: String): List<File> {
-        val count = properties.getProperty("$prefix.count")?.toIntOrNull() ?: 0
-        return (0 until count).mapNotNull { index -> properties.getProperty("$prefix.$index")?.let { File(it) } }
     }
 }

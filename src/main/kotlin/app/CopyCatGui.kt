@@ -13,13 +13,19 @@ import gui.DirectorySelectionScreen
 import gui.FileTypeSelectionScreen
 import gui.LastDirectorySettings
 import gui.LastDirectorySettingsStore
-import utility.Logger
+import gui.SummaryScreen
 import java.io.File
 import kotlin.system.exitProcess
 
 private sealed class GuiScreen {
     data class DirectorySelection(val sourceDirs: List<File>, val compareDirs: List<File>?, val destDirs: List<File>) : GuiScreen()
     data class FileTypeSelection(val sourceDirs: List<File>, val compareDirs: List<File>?, val destDirs: List<File>) : GuiScreen()
+    data class Summary(
+        val sourceDirs: List<File>,
+        val compareDirs: List<File>?,
+        val destDirs: List<File>,
+        val selectedFiles: List<File>
+    ) : GuiScreen()
 }
 
 class CopyCatGui(config: CopyCatConfiguration, skipLastSettings: Boolean) {
@@ -61,8 +67,37 @@ class CopyCatGui(config: CopyCatConfiguration, skipLastSettings: Boolean) {
                             )
                         },
                         onNext = { selectedFiles ->
-                            Logger.info("Selected ${selectedFiles.size} files to copy")
-                            // TODO: navigate to the next screen once it exists
+                            screen = GuiScreen.Summary(
+                                currentScreen.sourceDirs,
+                                currentScreen.compareDirs,
+                                currentScreen.destDirs,
+                                selectedFiles
+                            )
+                        }
+                    )
+
+                    is GuiScreen.Summary -> SummaryScreen(
+                        sourceDirs = currentScreen.sourceDirs,
+                        compareDirs = currentScreen.compareDirs,
+                        destDirs = currentScreen.destDirs,
+                        selectedFiles = currentScreen.selectedFiles,
+                        onBack = {
+                            screen = GuiScreen.FileTypeSelection(
+                                currentScreen.sourceDirs,
+                                currentScreen.compareDirs,
+                                currentScreen.destDirs
+                            )
+                        },
+                        onLaunch = {
+                            val launchConfig = CopyCatConfiguration(
+                                sourceDirs = currentScreen.sourceDirs,
+                                copyDestDirs = currentScreen.destDirs,
+                                filesSelectedToBeCopied = currentScreen.selectedFiles,
+                                printToConsole = config.printToConsole,
+                                printToFile = config.printToFile,
+                                configIsValid = true
+                            )
+                            CopyCatApplication().launch(launchConfig)
                         }
                     )
                 }
