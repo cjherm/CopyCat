@@ -38,5 +38,24 @@ class FileHelper {
                 file.extension.lowercase().ifBlank { NO_EXTENSION_KEY }
             }
         }
+
+        fun calculateFilesToCopy(
+            srcDirs: List<File>,
+            compDirs: List<File>,
+            inclTypes: List<String>,
+            exclTypes: List<String>
+        ): List<File> {
+            val uniqueFiles = srcDirs
+                .flatMap { srcDir -> compDirs.map { compDir -> findMissingFilesGroupedByType(srcDir, compDir) } }
+                .flatMap { it.entries }
+                .groupBy({ it.key }, { it.value })
+                .mapValues { (_, lists) -> lists.flatten().distinctBy { Triple(it.name, it.extension.lowercase(), it.length()) } }
+
+            return when {
+                inclTypes.isNotEmpty() -> inclTypes.mapNotNull { uniqueFiles[it] }.flatten()
+                exclTypes.isNotEmpty() -> uniqueFiles.filterKeys { it !in exclTypes }.values.flatten()
+                else -> uniqueFiles.values.flatten()
+            }
+        }
     }
 }

@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit
 object Logger {
 
     private val TIME_STAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss")
+    private val LOG_FILE_NAME_FORMATTER = DateTimeFormatter.ofPattern("yyyy_MM_dd__HH_mm_ss")
     private const val MAX_BUFFER_SIZE = 1000
     private const val TERMINATION_TIMEOUT = 5L
     private const val LOGGER_THREAD_NAME = "logger-io"
@@ -53,6 +54,8 @@ object Logger {
 
     private val version: String
         get() = Logger::class.java.`package`?.implementationVersion ?: "unknown"
+
+    fun defaultLogFileName(): String = "${LocalDateTime.now().format(LOG_FILE_NAME_FORMATTER)}.log"
 
     fun info(msg: String) = log(msg, "[INFO] ") { ConsolePrinter.printWhite(it) }
     fun warn(msg: String) = log(msg, "[WARN] ") { ConsolePrinter.printYellow(it) }

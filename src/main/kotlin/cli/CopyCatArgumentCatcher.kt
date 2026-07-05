@@ -2,11 +2,10 @@ package cli
 
 import cli.arguments.*
 import config.CopyCatConfiguration
+import utility.ConsolePrinter.Companion.printWhite
 import utility.FileHelper
 import utility.Logger
 import java.io.File
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class CopyCatArgumentCatcher(private val args: Array<String>) {
 
@@ -135,10 +134,10 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
                     Logger.error("Cannot create default log file: no destination directory available.")
                     return false
                 }
-                File(destDir, defaultLogFileName())
+                File(destDir, Logger.defaultLogFileName())
             }
 
-            File(logFilePath).isDirectory -> File(logFilePath, defaultLogFileName())
+            File(logFilePath).isDirectory -> File(logFilePath, Logger.defaultLogFileName())
 
             else -> File(logFilePath)
         }
@@ -162,10 +161,7 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
         return true
     }
 
-    private fun defaultLogFileName(): String =
-        "${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd__HH_mm_ss"))}.log"
-
-    fun getConfig(): CopyCatConfiguration? {
+    fun getConfig(): CopyCatConfiguration {
         val printToConsole = retrieveLogToConsoleFromArg()
         val srcDirs = retrieveSrcDirsFromArg()
         val destDirs = retrieveDestDirsFromArg(srcDirs)
@@ -187,7 +183,7 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
             configIsValid = false
         }
 
-        val filesSelectedToBeCopied = calculateFilesToCopy(srcDirs, compDirs, inclTypes, exclTypes)
+        val filesSelectedToBeCopied = FileHelper.calculateFilesToCopy(srcDirs, compDirs, inclTypes, exclTypes)
 
         return CopyCatConfiguration(
             sourceDirs = srcDirs,
@@ -197,24 +193,6 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
             printToFile = printToFile,
             configIsValid = configIsValid
         )
-    }
-    private fun calculateFilesToCopy(
-        srcDirs: List<File>,
-        compDirs: List<File>,
-        inclTypes: List<String>,
-        exclTypes: List<String>
-    ): List<File> {
-        val uniqueFiles = srcDirs
-            .flatMap { srcDir -> compDirs.map { compDir -> FileHelper.findMissingFilesGroupedByType(srcDir, compDir) } }
-            .flatMap { it.entries }
-            .groupBy({ it.key }, { it.value })
-            .mapValues { (_, lists) -> lists.flatten().distinctBy { Triple(it.name, it.extension.lowercase(), it.length()) } }
-
-        return when {
-            inclTypes.isNotEmpty() -> inclTypes.mapNotNull { uniqueFiles[it] }.flatten()
-            exclTypes.isNotEmpty() -> uniqueFiles.filterKeys { it !in exclTypes }.values.flatten()
-            else -> uniqueFiles.values.flatten()
-        }
     }
 
     private fun File.isValidDirectory() = exists() && isDirectory
@@ -260,6 +238,27 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
 
         fun userRequestsGui(args: Array<String>): Boolean {
             return args.contains("-${ArgumentKey.GUI.key}")
+        }
+
+        fun printHelp() {
+            printWhite(
+                "\nCopyCat offers you the possibility to copy files from at least one directory to one or multiple destination directory/-ies. It will check for possible duplicates before copying anything by comparing the contents. You can also separate directories for comparison and destination. Additionally a specific set of file types can be selected or excluded.\n" +
+                        "\n" +
+                        "REQUIRED:\n" +
+                        "\t-src PATH     Directory whose contents are to be copied\n" +
+                        "\t-dest PATH    Destination directory\n" +
+                        "-----------------------------------------------------------------\n" +
+                        "OPTIONAL:\n" +
+                        "\t-src PATH     For every other source directory\n" +
+                        "\t-dest PATH    For every other destination directory\n" +
+                        "\t-comp PATH    When you want to compare to different directory/ies than the one/s for destination\n" +
+                        "\t-incl TYPE    Only include this file type\n" +
+                        "\t-excl TYPE    Exclude this file types\n" +
+                        "\t-gui          If you want to use the GUI\n" +
+                        "\t-no-logc      Disable log to console (enabled by default)\n" +
+                        "\t-logf         Enable log to file, written to the first destination directory as yyyy_MM_dd__HH_mm_ss.log\n" +
+                        "\t-logf PATH    Enable log to file; PATH to a directory creates yyyy_MM_dd__HH_mm_ss.log there, PATH to a file writes/creates that exact file"
+            )
         }
     }
 }
