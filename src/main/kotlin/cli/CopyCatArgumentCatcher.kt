@@ -1,6 +1,9 @@
 package cli
 
-import cli.arguments.*
+import cli.arguments.Argument
+import cli.arguments.ArgumentKey
+import cli.arguments.Flag
+import cli.arguments.SingleValueArgument
 import config.CopyCatConfiguration
 import utility.ConsolePrinter.Companion.printWhite
 import utility.FileHelper
@@ -122,24 +125,23 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
         return !suppressLogToConsole
     }
 
-    private fun retrieveLogFileFromArg(destDirs: List<File>): Boolean {
-        val logArg = argsList.filterIsInstance<SingleValueArgument>().find { it.key == ArgumentKey.LOGF.key }
-            ?: return false
-        val logFilePath = logArg.value
+    private fun retrieveLogFileFromArg(): Boolean {
+        if (argsList.contains(Flag(ArgumentKey.NO_LOGF.key))) {
+            Logger.info("Logging to file disabled")
+            return false
+        }
 
-        val logFile = when {
-            logFilePath.isBlank() -> {
-                val destDir = destDirs.firstOrNull()
-                if (destDir == null) {
-                    Logger.error("Cannot create default log file: no destination directory available.")
-                    return false
-                }
-                File(destDir, Logger.defaultLogFileName())
+        val logArg = argsList.filterIsInstance<SingleValueArgument>().find { it.key == ArgumentKey.LOGF.key }
+
+        val logFile = if (logArg != null) {
+            if (logArg.value.isBlank()) {
+                Logger.error("Missing PATH for -logf. Provide a directory or file path.")
+                return false
             }
 
-            File(logFilePath).isDirectory -> File(logFilePath, Logger.defaultLogFileName())
-
-            else -> File(logFilePath)
+            if (File(logArg.value).isDirectory) File(logArg.value, Logger.defaultLogFileName()) else File(logArg.value)
+        } else {
+            File(defaultLogDirectory(), Logger.defaultLogFileName())
         }
 
         if (logFile.isDirectory) {
@@ -161,11 +163,17 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
         return true
     }
 
+    private fun defaultLogDirectory(): File {
+        val codeSourceLocation = File(CopyCatArgumentCatcher::class.java.protectionDomain.codeSource.location.toURI())
+        val appDir = if (codeSourceLocation.isFile) codeSourceLocation.parentFile else codeSourceLocation
+        return File(appDir, "log")
+    }
+
     fun getConfig(): CopyCatConfiguration {
         val printToConsole = retrieveLogToConsoleFromArg()
         val srcDirs = retrieveSrcDirsFromArg()
         val destDirs = retrieveDestDirsFromArg(srcDirs)
-        val printToFile = retrieveLogFileFromArg(destDirs)
+        val printToFile = retrieveLogFileFromArg()
         val compDirsTemp = retrieveCompDirsFromArg(srcDirs)
         val inclTypes = retrieveInclTypesFromArg()
         val exclTypes = retrieveExclTypesFromArg()
@@ -213,13 +221,12 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
                         ArgumentKey.TYPES_INCL, ArgumentKey.TYPES_EXCL ->
                             SingleValueArgument(argumentKey.key, queue.removeFirstOrNull() ?: "")
 
-                        // "-logf" may be followed by a path, or stand alone (next token is another flag or absent)
                         ArgumentKey.LOGF -> {
                             val value = queue.firstOrNull()?.takeIf { !it.startsWith("-") }?.also { queue.removeFirst() }
                             SingleValueArgument(argumentKey.key, value ?: "")
                         }
 
-                        ArgumentKey.GUI, ArgumentKey.NO_LOGC ->
+                        ArgumentKey.GUI, ArgumentKey.NO_LOGC, ArgumentKey.NO_LOGF ->
                             Flag(argumentKey.key)
 
                         ArgumentKey.HELP -> null
@@ -256,8 +263,8 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
                         "\t-excl TYPE    Exclude this file types\n" +
                         "\t-gui          If you want to use the GUI\n" +
                         "\t-no-logc      Disable log to console (enabled by default)\n" +
-                        "\t-logf         Enable log to file, written to the first destination directory as yyyy_MM_dd__HH_mm_ss.log\n" +
-                        "\t-logf PATH    Enable log to file; PATH to a directory creates yyyy_MM_dd__HH_mm_ss.log there, PATH to a file writes/creates that exact file"
+                        "\t-logf PATH    Log to file at PATH; a directory creates yyyy_MM_dd__HH_mm_ss.log there, a file path writes/creates that exact file\n" +
+                        "\t-no-logf      Disable log to file (by default a log file is created in a \"log\" directory next to the jar)"
             )
         }
     }

@@ -18,7 +18,8 @@ class CopyCatConfigurationBuilder {
             copyDestDir,
             filesSelectedToBeCopied,
             printToConsole,
-            printToFile
+            printToFile,
+            configIsValid = true
         )
     }
 }
