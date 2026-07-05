@@ -10,6 +10,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import utility.AppLocation
 import utility.FileHelper
 import java.io.File
 import javax.swing.JFileChooser
@@ -80,6 +81,7 @@ fun SummaryScreen(
                 val chooser = JFileChooser()
                 chooser.dialogTitle = "Save settings"
                 chooser.fileFilter = FileNameExtensionFilter("CopyCat settings (*.config)", "config")
+                chooser.currentDirectory = CopyCatSettingsExportStore.lastSavedDirectory ?: AppLocation.directory()
                 chooser.selectedFile = File("CopyCat.config")
                 if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
                     val chosen = chooser.selectedFile

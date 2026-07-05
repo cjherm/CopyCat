@@ -12,6 +12,9 @@ data class CopyCatSettingsExport(
 
 object CopyCatSettingsExportStore {
 
+    var lastSavedDirectory: File? = null
+        private set
+
     fun save(file: File, settings: CopyCatSettingsExport) {
         val properties = Properties()
         properties.setProperty("compareActive", (settings.compareDirs != null).toString())
@@ -21,5 +24,6 @@ object CopyCatSettingsExportStore {
         properties.setStrings("includeType", settings.includeTypes)
 
         file.outputStream().use { properties.store(it, "CopyCat settings") }
+        lastSavedDirectory = file.absoluteFile.parentFile
     }
 }
