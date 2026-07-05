@@ -5,18 +5,12 @@ import config.CopyCatConfiguration
 import utility.FileHelper
 import utility.Logger
 import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class CopyCatArgumentCatcher(private val args: Array<String>) {
 
     private val argsList: List<Argument> = parseArgs()
-
-    fun requestsGui(): Boolean {
-        val requestedGui = argsList.contains(Flag(ArgumentKey.GUI.key))
-        if (requestedGui) {
-            Logger.info("Requested GUI")
-        }
-        return requestedGui
-    }
 
     fun retrieveSrcDirsFromArg(): List<File> {
         val argValues = argsList.allValuesOf(ArgumentKey.SRC)
@@ -129,11 +123,26 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
         return logToConsole
     }
 
-    private fun retrieveLogFileFromArg(): Boolean {
-        val logFilePath = argsList.singleValueOf(ArgumentKey.LOGF)
-        if (logFilePath.isNullOrBlank()) return false
+    private fun retrieveLogFileFromArg(destDirs: List<File>): Boolean {
+        val logfArg = argsList.filterIsInstance<SingleValueArgument>().find { it.key == ArgumentKey.LOGF.key }
+            ?: return false
+        val logFilePath = logfArg.value
 
-        val logFile = File(logFilePath)
+        val logFile = when {
+            logFilePath.isBlank() -> {
+                val destDir = destDirs.firstOrNull()
+                if (destDir == null) {
+                    Logger.error("Cannot create default log file: no destination directory available.")
+                    return false
+                }
+                File(destDir, defaultLogFileName())
+            }
+
+            File(logFilePath).isDirectory -> File(logFilePath, defaultLogFileName())
+
+            else -> File(logFilePath)
+        }
+
         if (logFile.isDirectory) {
             Logger.error("Log file path points to a directory, not a file: ${logFile.absolutePath}")
             return false
@@ -153,11 +162,14 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
         return true
     }
 
+    private fun defaultLogFileName(): String =
+        "${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd__HH_mm_ss"))}.log"
+
     fun getConfig(): CopyCatConfiguration? {
         val printToConsole = retrieveLogToConsoleFromArg()
-        val printToFile = retrieveLogFileFromArg()
         val srcDirs = retrieveSrcDirsFromArg()
         val destDirs = retrieveDestDirsFromArg(srcDirs)
+        val printToFile = retrieveLogFileFromArg(destDirs)
         val compDirsTemp = retrieveCompDirsFromArg(srcDirs)
         val inclTypes = retrieveInclTypesFromArg()
         val exclTypes = retrieveExclTypesFromArg()
@@ -205,9 +217,6 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
 
     private fun File.isValidDirectory() = exists() && isDirectory
 
-    private fun List<Argument>.singleValueOf(key: ArgumentKey): String? =
-        filterIsInstance<SingleValueArgument>().find { it.key == key.key }?.value
-
     private fun List<Argument>.allValuesOf(key: ArgumentKey): List<String> =
         filterIsInstance<SingleValueArgument>().filter { it.key == key.key }.map { it.value }
 
@@ -220,9 +229,15 @@ class CopyCatArgumentCatcher(private val args: Array<String>) {
                 val argumentKey = ArgumentKey.fromString(arg.removePrefix("-")) ?: continue
                 val listElem =
                     when (argumentKey) {
-                        ArgumentKey.SRC, ArgumentKey.DEST, ArgumentKey.COMP, ArgumentKey.LOGF,
+                        ArgumentKey.SRC, ArgumentKey.DEST, ArgumentKey.COMP,
                         ArgumentKey.TYPES_INCL, ArgumentKey.TYPES_EXCL ->
                             SingleValueArgument(argumentKey.key, queue.removeFirstOrNull() ?: "")
+
+                        // "-logf" may be followed by a path, or stand alone (next token is another flag or absent)
+                        ArgumentKey.LOGF -> {
+                            val value = queue.firstOrNull()?.takeIf { !it.startsWith("-") }?.also { queue.removeFirst() }
+                            SingleValueArgument(argumentKey.key, value ?: "")
+                        }
 
                         ArgumentKey.GUI, ArgumentKey.LOGC ->
                             Flag(argumentKey.key)

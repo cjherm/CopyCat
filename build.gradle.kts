@@ -31,6 +31,7 @@ application {
 tasks.jar {
     manifest {
         attributes["Main-Class"] = "MainKt"
+        attributes["Implementation-Version"] = project.version
     }
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

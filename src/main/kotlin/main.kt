@@ -3,7 +3,6 @@ import cli.CopyCatArgumentCatcher
 import cli.CopyCatShell
 import config.CopyCatConfiguration
 import config.CopyCatConfigurationBuilder
-import utility.ConsolePrinter.Companion.printRed
 import utility.ConsolePrinter.Companion.printWhite
 import utility.ConsolePrinter.Companion.printYellow
 import utility.RestartProgramException
@@ -34,8 +33,6 @@ fun main(args: Array<String>) {
         startImmediateExecution(config)
         return
     }
-
-    printRed("Missing or invalid arguments for immediate execution! Please add at least \"-src PATH -dest PATH\" as minimum!")
 }
 
 private fun startShell() {
@@ -81,7 +78,8 @@ private fun showHelp() {
                 "\t-excl TYPE    Exclude this file types\n" +
                 "\t-gui          If you want to use the GUI\n" +
                 "\t-logc         Enable log to console\n" +
-                "\t-logf PATH    Filepath and name where the log should be written to"
+                "\t-logf         Enable log to file, written to the first destination directory as yyyy_MM_dd__HH_mm_ss.log\n" +
+                "\t-logf PATH    Enable log to file; PATH to a directory creates yyyy_MM_dd__HH_mm_ss.log there, PATH to a file writes/creates that exact file"
     )
 }
 
