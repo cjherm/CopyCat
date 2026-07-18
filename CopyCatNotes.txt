@@ -1,0 +1,10 @@
+Flag
+	-gui		OPTIONAL: GUI starten
+	-logc		OPTIONAL: In der Konsole loggen
+Arg
+	-src PATH	Path to source directory
+	-dest PATH	Path to destination directory
+	-comp PATH	OPTIONAL: Path to directory to compare to
+	-logf PATH	OPTIONAL: Path to directory where to store log file or name of file
+	-inc TYPE	OPTIONAL: Only this file type
+	-excl TYPE	OPTIONAL: Exclude this file type

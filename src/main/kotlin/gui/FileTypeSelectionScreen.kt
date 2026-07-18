@@ -26,7 +26,10 @@ private fun List<FileTypeInfo>.sortedByCriterion(criterion: SortCriterion): List
     SortCriterion.FILE_COUNT -> sortedByDescending { it.count }
     SortCriterion.SIZE -> sortedByDescending { it.totalSizeBytes }
 }
-
+// TODO <<<<<<<<<<<<< Load Settings option
+// TODO Actual copying and showing progress
+// TODO better graphical design or even in XML?
+// last saved cfg dir does not work -> add to config?
 @Composable
 fun FileTypeSelectionScreen(
     sourceDirs: List<File>,
