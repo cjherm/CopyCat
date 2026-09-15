@@ -25,11 +25,50 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import javafx.application.Platform
+import javafx.embed.swing.JFXPanel
+import javafx.stage.DirectoryChooser
 import java.io.File
-import javax.swing.JFileChooser
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicBoolean
 
 private class DirectoryRowState(initialPath: String = "") {
     var path by mutableStateOf(initialPath)
+}
+
+// Uses JavaFX's DirectoryChooser instead of Swing's JFileChooser because it delegates to the native Windows
+// common dialog, which understands shell-namespace-only locations (e.g. MTP-connected phones) that
+// java.io.File/JFileChooser cannot see since they only enumerate real filesystem roots.
+private object NativeDirectoryChooser {
+    private val toolkitStarted = AtomicBoolean(false)
+
+    private fun ensureToolkitStarted() {
+        if (toolkitStarted.compareAndSet(false, true)) {
+            JFXPanel() // starting this implicitly boots the JavaFX toolkit thread
+            Platform.setImplicitExit(false) // keep the toolkit alive between dialog invocations
+        }
+    }
+
+    fun choose(initialPath: String): String? {
+        ensureToolkitStarted()
+        var result: String? = null
+        val latch = CountDownLatch(1)
+        Platform.runLater {
+            try {
+                val chooser = DirectoryChooser()
+                chooser.title = "Select directory"
+                val initialDir = initialPath.trim().takeIf { it.isNotEmpty() }?.let(::File)
+                if (initialDir != null && initialDir.isDirectory) {
+                    chooser.initialDirectory = initialDir
+                }
+                result = chooser.showDialog(null)?.absolutePath
+            } finally {
+                latch.countDown()
+            }
+        }
+        latch.await()
+        return result
+    }
 }
 
 private sealed class DirStatus {
@@ -103,10 +142,9 @@ private fun DirectoryRow(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Button(onClick = {
-                val chooser = JFileChooser(row.path.trim().ifBlank { null })
-                chooser.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
-                if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                    row.path = chooser.selectedFile.absolutePath
+                val selected = NativeDirectoryChooser.choose(row.path)
+                if (selected != null) {
+                    row.path = selected
                 }
             }) {
                 Text("Browse")

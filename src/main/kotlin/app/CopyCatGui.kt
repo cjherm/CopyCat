@@ -104,8 +104,8 @@ class CopyCatGui(config: CopyCatConfiguration, skipLastSettings: Boolean) {
             }
         }
 
-        // JFileChooser (used by the "Browse" buttons) starts the AWT event thread, which is non-daemon
-        // and would otherwise keep the JVM alive after all windows are closed.
+        // The "Browse" buttons start the AWT event thread and the JavaFX toolkit thread, both non-daemon,
+        // which would otherwise keep the JVM alive after all windows are closed.
         exitProcess(0)
     }
 }
